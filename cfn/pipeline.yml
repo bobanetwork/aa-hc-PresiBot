@@ -1,0 +1,382 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Pipeline
+
+Parameters:
+  Namespace:
+    Type: String
+    AllowedPattern: "[a-z][a-z0-9-]+"
+
+  PipelinesBucket:
+    Type: String
+
+  PipelinesRoleArn:
+    Type: String
+
+  CodestarConnectionArn:
+    Type: String
+
+  FullRepoName:
+    Type: String
+    Description: Full repository name e.g. bobanetwork/lightbridge
+
+  BranchName:
+    Type: String
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID
+
+  SubnetA:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet A ID
+
+  SubnetB:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet B ID
+
+  DomainName:
+    Type: String
+    Description: Domain Name
+
+  HostedZone:
+    Type: AWS::Route53::HostedZone::Id
+
+Resources:
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref Namespace
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
+
+  DockerBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  DockerCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref Namespace
+      Description: !Ref Namespace
+      ServiceRole: !GetAtt DockerBuildRole.Arn
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:5.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: ECR_REPO_URI
+            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          env:
+            exported-variables:
+              - ECR_REPO_URI
+          phases:
+            build:
+              commands:
+                - echo "Building Docker Image"
+                - cd src/backend
+                - docker build -t $ECR_REPO_URI .
+                - echo "Pushing Docker Image"
+                - docker push $ECR_REPO_URI:latest
+
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Status: Enabled
+            NoncurrentVersionExpirationInDays: 7
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Sid: CloudFrontAccess
+            Effect: Allow
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontIdentity.S3CanonicalUserId
+            Action: s3:GetObject
+            Resource: !Sub arn:${AWS::Partition}:s3:::${FrontendBucket}/*
+
+  CloudFrontIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Ref AWS::StackName
+
+  FrontendBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::${FrontendBucket}
+                  - !Sub arn:${AWS::Partition}:s3:::${FrontendBucket}/*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  FrontendCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref Namespace
+      Description: !Ref Namespace
+      ServiceRole: !GetAtt FrontendBuildRole.Arn
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:5.0
+        EnvironmentVariables:
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
+          version: 0.2
+          phases:
+            build:
+              commands:
+                - echo "Building Frontend"
+                - cd src/frontend
+                # - npm run build
+                - aws s3 sync . s3://${FrontendBucket} --delete
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Ref AWS::StackName
+      RestartExecutionOnUpdate: true
+      RoleArn: !Ref PipelinesRoleArn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelinesBucket
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              RunOrder: 1
+              Configuration:
+                ConnectionArn: !Ref CodestarConnectionArn
+                FullRepositoryId: !Ref FullRepoName
+                BranchName: !Ref BranchName
+                DetectChanges: true
+              OutputArtifacts:
+                - Name: SourceCode
+        - Name: Pipeline
+          Actions:
+            - Name: Pipeline
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              InputArtifacts:
+                - Name: SourceCode
+              RunOrder: 1
+              Configuration:
+                ActionMode: REPLACE_ON_FAILURE
+                StackName: !Ref AWS::StackName
+                RoleArn: !Ref PipelinesRoleArn
+                TemplatePath: SourceCode::cfn/pipeline.yml
+                TemplateConfiguration: SourceCode::config/pipeline.json
+                Capabilities: CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
+        - Name: Setup
+          Actions:
+            - Name: DockerBuild
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceCode
+              Namespace: docker
+              RunOrder: 1
+              Configuration:
+                ProjectName: !Ref Namespace
+            - Name: FrontendBuild
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceCode
+              RunOrder: 1
+              Configuration:
+                ProjectName: !Ref Namespace
+            - Name: RDSDatabase
+              RunOrder: 1
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Namespace: rds
+              Configuration:
+                ActionMode: REPLACE_ON_FAILURE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !Ref PipelinesRoleArn
+                StackName: !Sub ${Namespace}-rds
+                TemplatePath: SourceCode::cfn/rds.yml
+                ParameterOverrides: !Sub |
+                  {
+                    "Namespace": "${Namespace}",
+                    "VpcId": "${VpcId}",
+                    "SubnetA": "${SubnetA}",
+                    "SubnetB": "${SubnetB}"
+                  }
+              InputArtifacts:
+                - Name: SourceCode
+            - Name: ALB
+              RunOrder: 1
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Namespace: alb
+              Configuration:
+                ActionMode: REPLACE_ON_FAILURE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !Ref PipelinesRoleArn
+                StackName: !Sub ${Namespace}-alb
+                TemplatePath: SourceCode::cfn/alb.yml
+                ParameterOverrides: !Sub |
+                  {
+                    "Namespace": "${Namespace}",
+                    "VpcId": "${VpcId}",
+                    "SubnetA": "${SubnetA}",
+                    "SubnetB": "${SubnetB}",
+                    "DomainName": "${DomainName}",
+                    "HostedZone": "${HostedZone}"
+                  }
+              InputArtifacts:
+                - Name: SourceCode
+            - Name: CDN
+              RunOrder: 2
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Namespace: cdn
+              Configuration:
+                ActionMode: REPLACE_ON_FAILURE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !Ref PipelinesRoleArn
+                StackName: !Sub ${Namespace}-cdn
+                TemplatePath: SourceCode::cfn/cdn.yml
+                ParameterOverrides: !Sub |
+                  {
+                    "DomainName": "${DomainName}",
+                    "HostedZone": "${HostedZone}",
+                    "FrontendBucketRegionalDomainName": "${FrontendBucket.RegionalDomainName}",
+                    "LoadBalancerDNSName": "#{alb.DNSName}",
+                    "CDNHeaderValue": "${AWS::StackId}"
+                  }
+              InputArtifacts:
+                - Name: SourceCode
+        - Name: App
+          Actions:
+            - Name: ECS
+              RunOrder: 2
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Namespace: ecs
+              Configuration:
+                ActionMode: REPLACE_ON_FAILURE
+                Capabilities: CAPABILITY_NAMED_IAM
+                RoleArn: !Ref PipelinesRoleArn
+                StackName: !Sub ${Namespace}-ecs
+                TemplatePath: SourceCode::cfn/ecs.yml
+                TemplateConfiguration: SourceCode::config/ecs.json
+                ParameterOverrides: !Sub |
+                  {
+                    "Namespace": "${Namespace}",
+                    "VpcId": "${VpcId}",
+                    "SubnetA": "${SubnetA}",
+                    "SubnetB": "${SubnetB}",
+                    "DatabaseUserSecret": "#{rds.MasterUserSecret}",
+                    "Listener": "#{alb.HttpsListener}",
+                    "CDNHeaderValue": "${AWS::StackId}",
+                    "ImageURI": "#{docker.ECR_REPO_URI}"
+                  }
+              InputArtifacts:
+                - Name: SourceCode

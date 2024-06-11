@@ -1,0 +1,227 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ECS Service
+
+Parameters:
+  Namespace:
+    Type: String
+    AllowedPattern: "[a-z][a-z0-9-]+"
+
+  ServiceCount:
+    Type: Number
+    Default: 1
+
+  Listener:
+    Type: String
+    Description: Listener ARN
+
+  CDNHeaderValue:
+    Type: String
+
+  ImageURI:
+    Type: String
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID
+
+  SubnetA:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet A ID
+
+  SubnetB:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet B ID
+
+  DatabaseUserSecret:
+    Type: String
+    Description: Database User Secret
+
+  ContainerSize:
+    Type: String
+    Default: Small
+    AllowedValues:
+      - Small
+      - Medium
+      - Large
+    Description: Small (0.5 vCPU, 1 GB RAM), Medium (2 vCPU, 4 GB RAM), Large (4 vCPU, 8 GB RAM)
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: RDS Security Group
+
+Mappings:
+  Fargate:
+    Small:
+      Cpu: 512
+      Memory: 1024
+    Medium:
+      Cpu: 2048
+      Memory: 4096
+    Large:
+      Cpu: 4096
+      Memory: 8192
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterSettings:
+        - Name: containerInsights
+          Value: disabled
+
+  TaskExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  TaskExecSecretsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref TaskExecRole
+      PolicyName: !Sub ${AWS::StackName}-secrets
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource:
+              - !Ref DatabaseUserSecret
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub /ecs/${Namespace}
+      RetentionInDays: 7
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt TaskExecRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      Family: !Ref Namespace
+      Cpu: !FindInMap [Fargate, !Ref ContainerSize, Cpu]
+      Memory: !FindInMap [Fargate, !Ref ContainerSize, Memory]
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Image: !Ref ImageURI
+          Name: !Ref Namespace
+          Essential: true
+          LinuxParameters:
+            InitProcessEnabled: true
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          Secrets:
+            - Name: POSTGRES_USER
+              ValueFrom: !Sub ${DatabaseUserSecret}:username
+            - Name: POSTGRES_PASSWORD
+              ValueFrom: !Sub ${DatabaseUserSecret}:password
+            - Name: POSTGRES_HOST
+              ValueFrom: !Sub ${DatabaseUserSecret}:host
+          Environment:
+            - Name: POSTGRES_DB
+              Value: !Ref Namespace
+
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ECSCluster
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - !Ref SubnetA
+            - !Ref SubnetB
+      DesiredCount: !Ref ServiceCount
+      LaunchType: FARGATE
+      SchedulingStrategy: REPLICA
+      TaskDefinition: !Ref TaskDefinition
+      LoadBalancers:
+        - ContainerName: !Ref Namespace
+          ContainerPort: 80
+          TargetGroupArn: !Ref TargetGroup
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VpcId
+
+  ListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      Conditions:
+        - Field: header
+          HttpHeaderConfig:
+            HttpHeaderName: X-CDN-TO-ALB
+            Values:
+              - !Ref CDNHeaderValue
+      ListenerArn: !Ref Listener
+      Priority: 100
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref AWS::StackName
+      VpcId: !Ref VpcId
+
+  RDSSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RDSSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref SecurityGroup
+
+Outputs:
+  SecurityGroup:
+    Value: !Ref SecurityGroup

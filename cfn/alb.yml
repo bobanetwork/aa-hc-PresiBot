@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Application Load Balancer
+
+Parameters:
+  Namespace:
+    Type: String
+    AllowedPattern: "[a-z][a-z0-9-]+"
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID
+
+  SubnetA:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet A ID
+
+  SubnetB:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet B ID
+
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref AWS::StackName
+      Subnets:
+        - !Ref SubnetA
+        - !Ref SubnetB
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref AWS::StackName
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourcePrefixListId: pl-b6a144df
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: text/plain
+            MessageBody: Not Found
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  LoadBalancer:
+    Value: !Ref LoadBalancer
+  
+  LoadBalancerSecurityGroup:
+    Value: !Ref LoadBalancerSecurityGroup
+
+  HttpListener:
+    Value: !Ref HttpListener
+
+  DNSName:
+    Value: !GetAtt LoadBalancer.DNSName

@@ -1,0 +1,14 @@
+{
+  "Parameters": {
+    "Namespace": "mycoolapp",
+    "PipelinesBucket": "hackathons-pipeline-setup-pipelinebucket-d7nv5focig4g",
+    "PipelinesRoleArn": "arn:aws:iam::381492172016:role/hackathons-pipeline-setup-PipelineRole-JtADF2hJgVMI",
+    "CodestarConnectionArn": "arn:aws:codestar-connections:us-east-2:381492172016:connection/b18783a2-265b-41fe-8bbd-b02b45145c9c",
+    "BranchName": "main",
+    "VpcId": "vpc-059a1d0cb8d3bedea",
+    "SubnetA": "subnet-05cfef81526874b7b",
+    "SubnetB": "subnet-0204cf84904d86177",
+    "DomainName": "mycoolapp.hackathon.sepolia.boba.network",
+    "HostedZone": "Z04578513AS6GWQE8347K"
+  }
+}

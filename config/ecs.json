@@ -1,0 +1,6 @@
+{
+  "Parameters": {
+    "ServiceCount": "1",
+    "ContainerSize": "Small"
+  }
+}

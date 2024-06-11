@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Postgres Database
+
+Parameters:
+  Namespace:
+    Type: String
+    AllowedPattern: "[a-z][a-z0-9-]+"
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID
+
+  SubnetA:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet A ID
+
+  SubnetB:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet B ID
+
+Resources:
+  DatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      Engine: postgres
+      EngineVersion: 15.4
+      DBName: !Ref Namespace
+      Port: 5432
+      ManageMasterUserPassword: true
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      AllocatedStorage: 30
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      BackupRetentionPeriod: 30
+      DBInstanceClass: db.t4g.medium
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref AWS::StackName
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
+
+  DatabaseSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Ref AWS::StackName
+      SubnetIds:
+        - !Ref SubnetA
+        - !Ref SubnetB
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
+
+Outputs:
+  DatabaseInstance:
+    Value: !Ref DatabaseInstance
+
+  DatabaseSecurityGroup:
+    Value: !Ref DatabaseSecurityGroup
+
+  MasterUserSecret:
+    Value: !GetAtt DatabaseInstance.MasterUserSecret.SecretArn
