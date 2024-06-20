@@ -18,6 +18,11 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Subnet B ID
 
+  MasterUsername:
+    Type: String
+    Description: Master username for the PostgreSQL database instance
+    Default: root
+
 Resources:
   DatabaseInstance:
     Type: AWS::RDS::DBInstance
@@ -28,6 +33,7 @@ Resources:
       EngineVersion: 15.4
       DBName: !Ref Namespace
       Port: 5432
+      MasterUsername: !Ref MasterUsername
       ManageMasterUserPassword: true
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
@@ -65,6 +71,8 @@ Outputs:
 
   DatabaseSecurityGroup:
     Value: !Ref DatabaseSecurityGroup
+    Export:
+      Name: !Sub ${Namespace}-rds-security-group
 
   MasterUserSecret:
     Value: !GetAtt DatabaseInstance.MasterUserSecret.SecretArn

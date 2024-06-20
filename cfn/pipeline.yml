@@ -6,6 +6,10 @@ Parameters:
     Type: String
     AllowedPattern: "[a-z][a-z0-9-]+"
 
+  CustomDomainName:
+    Type: String
+    Description: Domain name for the service
+    
   PipelinesBucket:
     Type: String
 
@@ -41,6 +45,14 @@ Parameters:
   HostedZone:
     Type: AWS::Route53::HostedZone::Id
 
+  CertificateArn:
+    Type: String
+
+  SSLCertificateArn:
+    Description: "The ARN of the SSL certificate to use for the HTTPS listener"
+    Type: String
+    Default: "arn:aws:acm:us-east-2:381492172016:certificate/f5b502aa-3d61-4b55-9226-49ed8d4cfd15"
+
 Resources:
   ECRRepository:
     Type: AWS::ECR::Repository
@@ -63,8 +75,19 @@ Resources:
       Policies:
         - PolicyName: CodeBuildPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::${PipelinesBucket}
+                  - !Sub arn:${AWS::Partition}:s3:::${PipelinesBucket}/*
               - Effect: Allow
                 Action:
                   - ecr:GetAuthorizationToken
@@ -90,7 +113,7 @@ Resources:
       Description: !Ref Namespace
       ServiceRole: !GetAtt DockerBuildRole.Arn
       Artifacts:
-        Type: NO_ARTIFACTS
+        Type: CODEPIPELINE   # Corrected to CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -100,13 +123,17 @@ Resources:
           - Name: ECR_REPO_URI
             Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}
       Source:
-        Type: CODEPIPELINE
+        Type: CODEPIPELINE  # Corrected to CODEPIPELINE
         BuildSpec: |
           version: 0.2
           env:
             exported-variables:
               - ECR_REPO_URI
           phases:
+            pre_build:
+              commands:
+                - echo "Logging in to Amazon ECR"
+                - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
             build:
               commands:
                 - echo "Building Docker Image"
@@ -169,6 +196,19 @@ Resources:
                   - s3:GetBucketLocation
                   - s3:PutObject
                   - s3:ListBucket
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::${PipelinesBucket}
+                  - !Sub arn:${AWS::Partition}:s3:::${PipelinesBucket}/*
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:DeleteObject
                 Resource:
                   - !Sub arn:${AWS::Partition}:s3:::${FrontendBucket}
                   - !Sub arn:${AWS::Partition}:s3:::${FrontendBucket}/*
@@ -182,11 +222,11 @@ Resources:
   FrontendCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Ref Namespace
+      Name: !Sub "${Namespace}-frontendcodebuild"
       Description: !Ref Namespace
       ServiceRole: !GetAtt FrontendBuildRole.Arn
       Artifacts:
-        Type: NO_ARTIFACTS
+        Type: CODEPIPELINE 
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -202,9 +242,12 @@ Resources:
             build:
               commands:
                 - echo "Building Frontend"
-                - cd src/frontend
+                - cd src/frontend/dist
                 # - npm run build
-                - aws s3 sync . s3://${FrontendBucket} --delete
+                # - aws s3 sync . s3://${FrontendBucket} --delete
+                - aws s3 rm s3://${FrontendBucket} --recursive 
+                - aws s3 sync . s3://${FrontendBucket} 
+                - aws s3 cp s3://${FrontendBucket}/index.html s3://${FrontendBucket}/index.html --metadata-directive REPLACE --cache-control max-age=0 --content-type text/html
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -277,7 +320,7 @@ Resources:
                 - Name: SourceCode
               RunOrder: 1
               Configuration:
-                ProjectName: !Ref Namespace
+                ProjectName: !Sub "${Namespace}-frontendcodebuild"
             - Name: RDSDatabase
               RunOrder: 1
               ActionTypeId:
@@ -322,7 +365,8 @@ Resources:
                     "SubnetA": "${SubnetA}",
                     "SubnetB": "${SubnetB}",
                     "DomainName": "${DomainName}",
-                    "HostedZone": "${HostedZone}"
+                    "HostedZone": "${HostedZone}",
+                    "SSLCertificateArn": "${SSLCertificateArn}"
                   }
               InputArtifacts:
                 - Name: SourceCode
@@ -346,7 +390,9 @@ Resources:
                     "HostedZone": "${HostedZone}",
                     "FrontendBucketRegionalDomainName": "${FrontendBucket.RegionalDomainName}",
                     "LoadBalancerDNSName": "#{alb.DNSName}",
-                    "CDNHeaderValue": "${AWS::StackId}"
+                    "CDNHeaderValue": "${AWS::StackId}",
+                    "CertificateArn": "${CertificateArn}",
+                    "CloudFrontIdentity": "${CloudFrontIdentity}"
                   }
               InputArtifacts:
                 - Name: SourceCode
@@ -374,8 +420,12 @@ Resources:
                     "SubnetA": "${SubnetA}",
                     "SubnetB": "${SubnetB}",
                     "DatabaseUserSecret": "#{rds.MasterUserSecret}",
-                    "Listener": "#{alb.HttpsListener}",
-                    "CDNHeaderValue": "${AWS::StackId}",
+                    "AlbHttpsListener": "#{alb.HttpsListener}",
+                    "LoadBalancerSecurityGroup": "#{alb.LoadBalancerSecurityGroup}",
+                    "AlbDNSName": "#{alb.DNSName}",
+                    "AlbHostedZoneId": "#{alb.ALBHostedZoneID}",
+                    "HostedZoneId": "${HostedZone}",
+                    "CustomDomainName": "${CustomDomainName}",
                     "ImageURI": "#{docker.ECR_REPO_URI}"
                   }
               InputArtifacts:

@@ -1,23 +1,24 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ECS Service
+Description: Offchain RPC ECS Service
 
 Parameters:
   Namespace:
     Type: String
+    Description: Network name used for namespacing
     AllowedPattern: "[a-z][a-z0-9-]+"
+
+  CustomDomainName:
+    Type: String
+    Description: Domain name for the service
 
   ServiceCount:
     Type: Number
     Default: 1
 
-  Listener:
-    Type: String
-    Description: Listener ARN
-
-  CDNHeaderValue:
-    Type: String
-
   ImageURI:
+    Type: String
+
+  ServiceName:
     Type: String
 
   VpcId:
@@ -36,6 +37,26 @@ Parameters:
     Type: String
     Description: Database User Secret
 
+  HostedZoneId:
+    Type: String
+    Description: Hosted zone ID for the service
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Security group for the ALB
+
+  AlbHttpsListener:
+    Type: String
+    Description: HTTPS listener ARN for the ALB
+
+  AlbHostedZoneId:
+    Type: String
+    Description: Hosted zone ID for the ALB
+
+  AlbDNSName:
+    Type: String
+    Description: DNS name for the ALB
+
   ContainerSize:
     Type: String
     Default: Small
@@ -45,9 +66,6 @@ Parameters:
       - Large
     Description: Small (0.5 vCPU, 1 GB RAM), Medium (2 vCPU, 4 GB RAM), Large (4 vCPU, 8 GB RAM)
 
-  RDSSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: RDS Security Group
 
 Mappings:
   Fargate:
@@ -68,6 +86,17 @@ Resources:
       ClusterSettings:
         - Name: containerInsights
           Value: disabled
+
+  Route53Record:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      RecordSets:
+        - Name: !Sub ${CustomDomainName}
+          Type: A
+          AliasTarget:
+            HostedZoneId: !Ref AlbHostedZoneId
+            DNSName: !Ref AlbDNSName
 
   TaskExecRole:
     Type: AWS::IAM::Role
@@ -95,6 +124,7 @@ Resources:
             Action: secretsmanager:GetSecretValue
             Resource:
               - !Ref DatabaseUserSecret
+              - !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}-??????
 
   TaskRole:
     Type: AWS::IAM::Role
@@ -130,7 +160,7 @@ Resources:
         - FARGATE
       ContainerDefinitions:
         - Image: !Ref ImageURI
-          Name: !Ref Namespace
+          Name: !Ref ServiceName
           Essential: true
           LinuxParameters:
             InitProcessEnabled: true
@@ -141,15 +171,31 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           Secrets:
-            - Name: POSTGRES_USER
-              ValueFrom: !Sub ${DatabaseUserSecret}:username
-            - Name: POSTGRES_PASSWORD
-              ValueFrom: !Sub ${DatabaseUserSecret}:password
+            - Name: username
+              ValueFrom: !Sub "${DatabaseUserSecret}:username::"
+            - Name: password
+              ValueFrom: !Sub "${DatabaseUserSecret}:password::"
+            - Name: HC_HELPER_ADDR
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:HC_HELPER_ADDR::"
+            - Name: ENTRY_POINTS
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:ENTRY_POINT::"
+            - Name: ENTRY_POINT
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:ENTRY_POINT::"
+            - Name: CHAIN_ID
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:CHAIN_ID::"
+            - Name: OC_HYBRID_ACCOUNT
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:OC_HYBRID_ACCOUNT::"
+            - Name: OC_OWNER
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:OC_OWNER::"
+            - Name: OC_PRIVKEY
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:OC_PRIVKEY::"  
             - Name: POSTGRES_HOST
-              ValueFrom: !Sub ${DatabaseUserSecret}:host
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:POSTGRES_HOST::"
           Environment:
-            - Name: POSTGRES_DB
-              Value: !Ref Namespace
+            - Name: OC_LISTEN_PORT
+              Value: 1234
+          PortMappings:
+            - ContainerPort: 1234
 
   Service:
     Type: AWS::ECS::Service
@@ -175,48 +221,52 @@ Resources:
       SchedulingStrategy: REPLICA
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
-        - ContainerName: !Ref Namespace
-          ContainerPort: 80
+        - ContainerName: !Ref ServiceName
+          ContainerPort: 1234
           TargetGroupArn: !Ref TargetGroup
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
-      Port: 80
+      Port: 1234
       Protocol: HTTP
-      UnhealthyThresholdCount: 2
       VpcId: !Ref VpcId
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: traffic-port
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: 200-499
+      TargetType: ip
 
-  ListenerRule:
+  HTTP443ListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
+      ListenerArn: !Ref AlbHttpsListener
+      Priority: 100
+      Conditions:
+        - Field: host-header
+          Values:
+            - !Sub ${CustomDomainName}
       Actions:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup
-      Conditions:
-        - Field: header
-          HttpHeaderConfig:
-            HttpHeaderName: X-CDN-TO-ALB
-            Values:
-              - !Ref CDNHeaderValue
-      ListenerArn: !Ref Listener
-      Priority: 100
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: !Ref AWS::StackName
       VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 1234
+          ToPort: 1234
+          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
 
   RDSSecurityGroupIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref RDSSecurityGroup
+      GroupId:
+        Fn::ImportValue: !Sub ${Namespace}-rds-security-group
       IpProtocol: tcp
       FromPort: 5432
       ToPort: 5432

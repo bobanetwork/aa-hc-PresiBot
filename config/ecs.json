@@ -1,6 +1,7 @@
 {
   "Parameters": {
     "ServiceCount": "1",
-    "ContainerSize": "Small"
+    "ContainerSize": "Small",
+    "ServiceName": "bobablockchainbusters-rpc"
   }
 }

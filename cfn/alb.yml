@@ -18,20 +18,23 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Subnet B ID
 
-Resources:
-  LoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Name: !Ref AWS::StackName
-      Subnets:
-        - !Ref SubnetA
-        - !Ref SubnetB
-      SecurityGroups:
-        - !Ref LoadBalancerSecurityGroup
-      Tags:
-        - Key: enya:namespace
-          Value: !Ref Namespace
+  DomainName:
+    Type: String
+    Description: Domain Name
 
+  HostedZone:
+    Type: AWS::Route53::HostedZone::Id
+
+  DefaultSslPolicy:
+    Type: String
+    Default: ELBSecurityPolicy-FS-1-2-Res-2020-10
+
+  SSLCertificateArn:
+    Description: "The ARN of the SSL certificate to use for the HTTPS listener"
+    Type: String
+    
+
+Resources:
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -44,7 +47,24 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourcePrefixListId: pl-b6a144df
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref AWS::StackName
+      Subnets:
+        - !Ref SubnetA
+        - !Ref SubnetB
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+      Tags:
+        - Key: enya:namespace
+          Value: !Ref Namespace
 
   HttpListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -59,6 +79,40 @@ Resources:
       Port: 80
       Protocol: HTTP
 
+  HTTPSRedirectListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref HttpListener
+      Priority: 1
+      Conditions:
+        - Field: path-pattern
+          Values: ["/*"]
+      Actions:
+        - Type: redirect
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: 443
+            Host: "#{host}"
+            Path: "/#{path}"
+            Query: "#{query}"
+            StatusCode: HTTP_301
+
+  HTTPS443Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            ContentType: text/plain
+            MessageBody: 404 Not Found
+            StatusCode: "404"
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref SSLCertificateArn
+      SslPolicy: !Ref DefaultSslPolicy
+
 Outputs:
   LoadBalancer:
     Value: !Ref LoadBalancer
@@ -69,5 +123,11 @@ Outputs:
   HttpListener:
     Value: !Ref HttpListener
 
+  HttpsListener:
+    Value: !Ref HTTPS443Listener
+
   DNSName:
     Value: !GetAtt LoadBalancer.DNSName
+
+  ALBHostedZoneID:
+    Value: !GetAtt LoadBalancer.CanonicalHostedZoneID

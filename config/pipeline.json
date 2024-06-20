@@ -1,14 +1,18 @@
 {
   "Parameters": {
-    "Namespace": "mycoolapp",
+    "Namespace": "bobablockchainbusters",
     "PipelinesBucket": "hackathons-pipeline-setup-pipelinebucket-d7nv5focig4g",
     "PipelinesRoleArn": "arn:aws:iam::381492172016:role/hackathons-pipeline-setup-PipelineRole-JtADF2hJgVMI",
     "CodestarConnectionArn": "arn:aws:codestar-connections:us-east-2:381492172016:connection/b18783a2-265b-41fe-8bbd-b02b45145c9c",
     "BranchName": "main",
-    "VpcId": "vpc-059a1d0cb8d3bedea",
-    "SubnetA": "subnet-05cfef81526874b7b",
-    "SubnetB": "subnet-0204cf84904d86177",
-    "DomainName": "mycoolapp.hackathon.sepolia.boba.network",
-    "HostedZone": "Z04578513AS6GWQE8347K"
+    "VpcId": "vpc-0f869878ccaf61189",
+    "SubnetA": "subnet-03a94efe7def15820",
+    "SubnetB": "subnet-097ba90687b865fe1",
+    "DomainName": "bobablockchainbusters.hackathon.sepolia.boba.network",
+    "HostedZone": "Z04578513AS6GWQE8347K",
+    "FullRepoName": "bobanetwork/boba-blockchain-busters",
+    "CertificateArn": "arn:aws:acm:us-east-1:381492172016:certificate/1b48a7f0-bd43-474a-93e0-33fae952c907",
+    "SSLCertificateArn": "arn:aws:acm:us-east-2:381492172016:certificate/f5b502aa-3d61-4b55-9226-49ed8d4cfd15",
+    "CustomDomainName": "bobablockchainbusters-rpc.hackathon.sepolia.boba.network"
   }
 }

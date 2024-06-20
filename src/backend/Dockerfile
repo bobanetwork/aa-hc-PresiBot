@@ -1,9 +1,8 @@
-FROM caddy:2.8.4-alpine
-RUN cat > /etc/caddy/Caddyfile <<EOF
-:80 {
-	respond "Hello World"
-}
-EOF
-RUN caddy validate --config /etc/caddy/Caddyfile
-EXPOSE 80
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
+FROM python:3.9-slim
+WORKDIR /app
+COPY . /app
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 1234
+
+CMD ["python", "offchain.py"]
