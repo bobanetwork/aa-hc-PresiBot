@@ -13,7 +13,7 @@
 ```
 git clone git@github.com:bobanetwork/aws-3tier-template.git
 
-cd src/frontend/counter-web-app
+cd src/frontend/
 
 ```
 
@@ -26,6 +26,18 @@ cd src/frontend/counter-web-app
 ```
 yarn run dev
 ```
+
+## To build the package to be used by pipelie.
+
+```
+yarn run build.
+```
+
+## Test Counter Address.
+
+1. Test Counter Example  - `0x7A9c74bEa653bBa510aAAe280981C117bc92273D`
+2. Test Counter Example (prefered) - `0x63BceAfAF62fB12394ecbEf10dBF1c5c36ba8b38`
+
 
 ## Use shadcn ui 
 

@@ -6,6 +6,7 @@ import FormComponent from './components/FormComponent'
 import ResultComponent from './components/ResultComponent'
 import { MetaMaskProvider } from './hooks/MetamaskContext'
 import './styles/global.css'
+import Footer from './components/Footer'
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
           <NetworkAlert />
           <FormComponent />
           <ResultComponent />
+          <Footer />
         </div>
       </MetaMaskProvider>
     </>

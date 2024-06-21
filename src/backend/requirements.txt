@@ -2,7 +2,6 @@ eth_abi==5.1.0
 eth_account==0.11.2
 eth_typing==4.2.3
 jsonrpcclient==4.0.3
-jsonrpclib==0.2.1
 jsonschema==4.22.0
 py_solc_x==2.0.3
 pytest==8.2.2
