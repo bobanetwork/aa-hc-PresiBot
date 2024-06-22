@@ -12,6 +12,7 @@ const FormComponent = () => {
   const [state] = useContext(MetaMaskContext)
   const [inputA, setinputA] = useState<any>(0)
   const [inputB, setinputB] = useState<any>(0)
+  const [testContract, setTestContract] = useState(ADD_SUB_CONTRACT)
   const [response, setResponse] = useState<any>(null)
   const [error, setError] = useState<any>(null)
 
@@ -32,8 +33,9 @@ const FormComponent = () => {
       if (!state.selectedAcount || Number(state.chain) !== 28882) {
         return;
       }
+
       // incase no user input data.
-      if (!Number(inputA) || !Number(inputB) || !state.chain || !state.selectedAcount) {
+      if (!Number(inputA) || (inputB === '' || isNaN(Number(inputB))) || !state.chain || !state.selectedAcount) {
         return
       }
 
@@ -48,7 +50,7 @@ const FormComponent = () => {
 
       const transactionDetails = {
         payload: {
-          to: ADD_SUB_CONTRACT,
+          to: testContract,
           value: '0',
           data: txData,
         },
@@ -78,6 +80,14 @@ const FormComponent = () => {
 
   return (
     <div className="flex flex-col w-6/12 rounded-md shadow-sm border m-auto my-2 p-5">
+      <div className="flex gap-1 items-stretch justify-around w-full mb-4">
+        <div className="flex flex-col justify-start items-start w-10/12">
+          <label className="block text-sm font-medium leading-6 text-teal-900">Test Contract Address</label>
+          <div className="relative mt-2 rounded-md shadow-sm w-full">
+            <input type="text" defaultValue={ADD_SUB_CONTRACT} value={testContract} onChange={(e) => setTestContract(e.target.value)} name="input A" id="input A" className="block w-full bg-teal-200 rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="0x" />
+          </div>
+        </div>
+      </div>
       <div className="flex gap-1 items-stretch justify-around w-full">
         <div className="flex flex-col justify-start items-start">
           <label className="block text-sm font-medium leading-6 text-gray-900">Input A</label>
@@ -100,7 +110,9 @@ const FormComponent = () => {
         <div className="w-full p-2 bg-red-600 rounded-md mb-2 flex ">
           <p className="text-md text-white"> Opps, something went wrong!</p>
         </div>
-        <div className="flex flex-1 justify-between rounded-md bg-teal-100 p-4 w-full cursor-pointer">
+        <div className="flex flex-1 justify-between rounded-md bg-teal-100 p-4 w-full cursor-pointer" onClick={async () => {
+          await navigator.clipboard.writeText(error);
+        }}>
           <div className="text-roboto-mono text-left text-xs text-blue-800 break-all whitespace-pre-wrap">
             {JSON.stringify(error, null, 2)}
           </div>
@@ -111,7 +123,9 @@ const FormComponent = () => {
         <div className="w-full p-2 bg-green-200 rounded-md mb-2 flex ">
           <p className="text-md text-blue-500"> Success!</p>
         </div>
-        <div className="flex flex-1 justify-between rounded-md bg-teal-100 p-4 w-full cursor-pointer">
+        <div className="flex flex-1 justify-between rounded-md bg-teal-100 p-4 w-full cursor-pointer" onClick={async () => {
+          await navigator.clipboard.writeText(response);
+        }}>
           <div className="text-roboto-mono text-left text-xs text-blue-800 break-all whitespace-pre-wrap">
             {JSON.stringify(response, null, 2)}
           </div>

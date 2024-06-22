@@ -56,7 +56,11 @@ const ResultComponent = () => {
             Read
           </Button>
         </div>
-        {result && <div className="flex flex-1 rounded-md bg-teal-100 p-4 w-full cursor-pointer">
+        {result && <div className="flex flex-1 rounded-md bg-teal-100 p-4 w-full cursor-pointer"
+          onClick={async () => {
+            await navigator.clipboard.writeText(result);
+          }}
+        >
           <div className="text-roboto-mono text-left text-xs text-blue-800 break-all whitespace-pre-wrap">
             {JSON.stringify(result, null, 2)}
           </div>
