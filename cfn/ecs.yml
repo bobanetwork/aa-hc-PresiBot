@@ -188,9 +188,11 @@ Resources:
             - Name: OC_OWNER
               ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:OC_OWNER::"
             - Name: OC_PRIVKEY
-              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:OC_PRIVKEY::"  
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:OC_PRIVKEY::"
             - Name: POSTGRES_HOST
               ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:POSTGRES_HOST::"
+            - Name: OPENAI_API_KEY
+              ValueFrom: !Sub "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${Namespace}:OPENAI_API_KEY::"
           Environment:
             - Name: OC_LISTEN_PORT
               Value: 1234
