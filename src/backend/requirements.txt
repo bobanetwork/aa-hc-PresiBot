@@ -10,3 +10,4 @@ web3==6.18.0
 langchain-community==0.2.5
 langchain-core==0.2.7
 langchain==0.2.5
+openai==0.28.0
