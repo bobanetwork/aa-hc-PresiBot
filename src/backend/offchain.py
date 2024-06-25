@@ -6,7 +6,7 @@ from openai_offchain import openai_create_question, select_best_answer
 
 def selector(name):
     nameHash = Web3.to_hex(Web3.keccak(text=name))
-    print("name: ", name, "nameHash: ", nameHash[2:10])
+    print("function name: ", name, "nameHash: ", nameHash[2:10])
     return nameHash[2:10]
 
 class RequestHandler(SimpleJSONRPCRequestHandler):
