@@ -40,6 +40,7 @@ contract PresiSimToken is ERC20, Ownable {
     event GameResultsSubmitted(uint256 gameID, address winner);
     event PlayerSubmittedAnswer(uint256 indexed gameID, address player, string answer);
     event RewardClaimed(address user, uint256 amount);
+    event HCError(uint32 err);
 
     constructor(address _demoAddr) ERC20("PresiSim Token", "PST") Ownable(msg.sender) {
         address payable demoAddr = payable(_demoAddr);
@@ -54,11 +55,12 @@ contract PresiSimToken is ERC20, Ownable {
         bytes32 userKey = bytes32(abi.encode(msg.sender));
         (uint32 err, bytes memory ret) = HA.CallOffchain(userKey, req);
 
-         if (err == 0) {
-           question = abi.decode(ret,(string));
-         } else {
-             revert(string(abi.encodePacked("HC error: ", Strings.toString(err))));
-         }
+        if (err == 0) {
+            question = abi.decode(ret,(string));
+        } else {
+            emit HCError(err);
+            revert("Error fetching question");
+        }
 
         Game storage newGame = games.push();
         newGame.question = question;
@@ -79,12 +81,13 @@ contract PresiSimToken is ERC20, Ownable {
         bytes32 userKey = bytes32(abi.encode(msg.sender));
         (uint32 err, bytes memory ret) = HA.CallOffchain(userKey, req);
 
-         if (err == 0) {
+        if (err == 0) {
             winner = abi.decode(ret,(address));
             _mint(winner, dailyReward);
             games[currentGameID].winner = winner;
-         } else {
-             revert(string(abi.encodePacked("HC error: ", Strings.toString(err))));
+        } else {
+            emit HCError(err);
+            revert("Error submitting results");
         }
 
         emit GameResultsSubmitted(currentGameID,winner);
