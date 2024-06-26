@@ -207,7 +207,8 @@ You can find the needed "HybridAccount"-Contract along with it's dependencies in
 
 ```solidity
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.20;
+
 import "../samples/HybridAccount.sol";
 contract TestCounter {
     mapping(address => uint256) public counters;

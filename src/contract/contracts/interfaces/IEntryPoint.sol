@@ -3,7 +3,8 @@
  ** Only one instance required on each chain.
  **/
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.20;
+
 
 /* solhint-disable avoid-low-level-calls */
 /* solhint-disable no-inline-assembly */

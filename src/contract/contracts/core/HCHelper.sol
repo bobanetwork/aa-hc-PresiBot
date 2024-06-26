@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.20;
+
 
 interface NonceMgr {
     function getNonce(address sender, uint192 key) external view returns (uint256 nonce);
