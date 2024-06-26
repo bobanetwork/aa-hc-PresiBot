@@ -8,6 +8,8 @@ from onchain_events import get_current_round_question, get_current_round_answers
 # Initialize the OpenAI model
 openai_model = OpenAI(model_name="gpt-4o")
 
+daily_question = {}
+
 def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
     print("OpenAI create_question")
     print("  -> offchain_openai handler called with ver={} subkey={} src_addr={} src_nonce={} oo_nonce={} payload={} extra_args={}".format(
@@ -34,6 +36,12 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
     try:
       req = parse_req(sk, src_addr, src_nonce, oo_nonce, payload)
 
+      current_question = get_current_round_question()
+      if current_question in daily_question:
+        resp = ethabi.encode(["string"], [daily_question[current_question]])
+        err_code = 0
+        return gen_response(req, err_code, resp)
+
       # Prepare the prompt
       prompt = prompt_template
 
@@ -43,6 +51,8 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
       # Generate a response from the model
       response = conversation.run(input=prompt)
       print("Open AI daily question:", response)
+      daily_question[current_question] = response
+
       resp = ethabi.encode(["string"], [response])
       err_code = 0
     except Exception as e:
