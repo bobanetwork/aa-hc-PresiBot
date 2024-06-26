@@ -29,6 +29,10 @@ const deployFn = async (hre) => {
   const registerURL = await HCHelper.RegisterUrl(HybridAccountArtifact.address, 'https://bobablockchainbusters-rpc.hackathon.sepolia.boba.network')
   await registerURL.wait()
   console.log('URL registered')
+
+  const addCredit = await HCHelper.AddCredit(HybridAccountArtifact.address, 1000000)
+  await addCredit.wait()
+  console.log('Credits added')
 }
 
 deployFn.tags = ['Register', 'setup', 'l1']

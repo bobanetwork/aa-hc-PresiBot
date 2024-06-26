@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./samples/HybridAccount.sol";
 
 /**
@@ -47,14 +48,16 @@ contract PresiSimToken is ERC20, Ownable {
     /**
      * @notice Fetches the daily question from the backend
      */
-    function getDailyQuestion() external onlyOwner {
+    function getDailyQuestion() external /** onlyOwner */ {
         string memory question;
         bytes memory req = abi.encodeWithSignature("createQuestion()");
         bytes32 userKey = bytes32(abi.encode(msg.sender));
-        (uint32 error, bytes memory ret) = HA.CallOffchain(userKey, req);
+        (uint32 err, bytes memory ret) = HA.CallOffchain(userKey, req);
 
-         if (error == 0) {
+         if (err == 0) {
            question = abi.decode(ret,(string));
+         } else {
+             revert(string(abi.encodePacked("HC error: ", Strings.toString(err))));
          }
 
         Game storage newGame = games.push();
@@ -70,17 +73,19 @@ contract PresiSimToken is ERC20, Ownable {
     /**
      * @notice Submits the game results to the backend
      */
-    function submitResults() external onlyOwner {
+    function submitResults() external /** onlyOwner */ {
         address winner;
         bytes memory req = abi.encodeWithSignature("selectBestAnswer()");
         bytes32 userKey = bytes32(abi.encode(msg.sender));
-        (uint32 error, bytes memory ret) = HA.CallOffchain(userKey, req);
+        (uint32 err, bytes memory ret) = HA.CallOffchain(userKey, req);
 
-         if (error == 0) {
+         if (err == 0) {
             winner = abi.decode(ret,(address));
             _mint(winner, dailyReward);
             games[currentGameID].winner = winner;
-         }
+         } else {
+             revert(string(abi.encodePacked("HC error: ", Strings.toString(err))));
+        }
 
         emit GameResultsSubmitted(currentGameID,winner);
     }
