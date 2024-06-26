@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./samples/HybridAccount.sol";
 
 /**
  * @title PresiSimToken
@@ -12,6 +13,8 @@ contract PresiSimToken is ERC20, Ownable {
     uint256 public dailyReward = 100 * (10 ** 18); // Daily reward, adjustable
     uint256 public referralReward = 10 * (10 ** 18); // Referral reward, adjustable
     uint256 public consecutiveReward = 5 * (10 ** 18); // 7 Days consecutive reward, adjustable
+    address payable demoAddr = payable(0x75b798049F6E09fb051a3c66EdceE32B76a90391);
+    HybridAccount HA = HybridAccount(demoAddr);
 
     struct GameAnswer {
         address user;
@@ -36,12 +39,19 @@ contract PresiSimToken is ERC20, Ownable {
     event RewardClaimed(address user, uint256 amount);
 
     constructor() ERC20("PresiSim Token", "PST") Ownable(msg.sender) {}
-
     /**
      * @notice Fetches the daily question from the backend
      */
     function getDailyQuestion() external onlyOwner {
-        string memory question = "What is the capital of France?"; // Example question
+        string memory question; 
+        bytes memory req = abi.encodeWithSignature("createQuestion()");
+        bytes32 userKey = bytes32(abi.encode(msg.sender));
+        (uint32 error, bytes memory ret) = HA.CallOffchain(userKey, req);
+
+         if (error == 0) {
+           question = abi.decode(ret,(string)); 
+         }
+
         Game storage newGame = games.push();
         newGame.question = question;
         newGame.timeOfFetch = block.timestamp;
@@ -115,5 +125,11 @@ contract PresiSimToken is ERC20, Ownable {
      */
     function setConsecutiveReward(uint256 _newConsecutiveReward) external onlyOwner {
         consecutiveReward = _newConsecutiveReward;
+    }
+
+    function getCurrentQuesiton() external view returns(string memory)
+    {
+        uint256 currentGameID = games.length - 1;
+        return games[currentGameID].question;
     }
 }
