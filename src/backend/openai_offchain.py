@@ -38,6 +38,7 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
 
       current_question = get_current_round_question()
       if current_question in daily_question:
+        print("Daily question already generated", daily_question[current_question])
         resp = ethabi.encode(["string"], [daily_question[current_question]])
         err_code = 0
         return gen_response(req, err_code, resp)
