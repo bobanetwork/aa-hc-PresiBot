@@ -70,7 +70,7 @@ def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
       Answers:
       {answers}
 
-      Must provide only the index of the best answer.
+      Must provide only the index of the best answer no matter of what.
     """
 
     try:
@@ -107,6 +107,7 @@ def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
       print("Built response", resp, "player", current_round_answers[int(index)]['player'])
       err_code = 0
     except Exception as e:
+        err_code = 1
         print("DECODE FAILED", e)
 
     return gen_response(req, err_code, resp)
