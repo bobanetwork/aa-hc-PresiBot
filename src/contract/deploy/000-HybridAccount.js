@@ -12,4 +12,3 @@ const deployFn = async (hre) => {
 deployFn.tags = ['HybridAccount', 'setup', 'l1']
 
 module.exports = deployFn
-

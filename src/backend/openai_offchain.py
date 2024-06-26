@@ -3,6 +3,8 @@ from eth_abi import abi as ethabi
 from offchain_utils import gen_response, parse_req
 from langchain import OpenAI, ConversationChain
 
+from onchain_events import get_current_round_question, get_current_round_answers
+
 # Initialize the OpenAI model
 openai_model = OpenAI(model_name="gpt-4o")
 
@@ -68,25 +70,30 @@ def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
       Answers:
       {answers}
 
-      Provide only the index of the best answer.
+      Must provide only the index of the best answer.
     """
 
     try:
       req = parse_req(sk, src_addr, src_nonce, oo_nonce, payload)
 
-      question = "How should the US respond to BRICS countries reducing their reliance on the US Dollar for trade?"
-      answers = [
-          "The US should focus on boosting its own economy through domestic policies and reducing its reliance on international trade.",
-        "The US should increase diplomatic efforts to strengthen alliances and trade agreements with other countries.",
-        "The US should implement sanctions against BRICS countries to deter them from reducing their reliance on the US Dollar.",
-        "The US should invest in new technologies and industries to stay competitive in the global market."
-      ]
+      current_question = get_current_round_question()
+      current_round_answers = get_current_round_answers()
+
+      if len(current_round_answers) == 0:
+        print("No answers found for the current round")
+        return gen_response(req, 1, Web3.to_bytes(text="No answers found for the current round"))
+
+      answers_list = []
+      for i in range(len(current_round_answers)):
+        answers_list.append(current_round_answers[i]['answer'])
+
+      print("current question: {} and answers: {}".format(current_question, answers_list))
 
       # Format the answers as a list string
-      answers_list = "\n".join([f"{i}. {answer}" for i, answer in enumerate(answers)])
+      answers_list = "\n".join([f"{i}. {answer}" for i, answer in enumerate(answers_list)])
 
       # Prepare the prompt
-      prompt = prompt_template.format(question=question, answers=answers_list)
+      prompt = prompt_template.format(question=current_question, answers=answers_list)
 
       # Create the conversation chain
       conversation = ConversationChain(llm=openai_model, verbose=True)
@@ -95,8 +102,9 @@ def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
       best_answer_index = conversation.run(input=prompt)
 
       index = best_answer_index.strip()
-      print("Daily Question {} - Best Answer {}".format(question, answers[int(index)]))
-      resp = ethabi.encode(["uint256"], [int(index)])
+      print("Daily Question {} - Best Answer {}".format(current_question, current_round_answers[int(index)]))
+      resp = ethabi.encode(["address"], [current_round_answers[int(index)]['player']])
+      print("Built response", resp, "player", current_round_answers[int(index)]['player'])
       err_code = 0
     except Exception as e:
         print("DECODE FAILED", e)

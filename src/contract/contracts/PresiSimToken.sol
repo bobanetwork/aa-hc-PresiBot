@@ -29,6 +29,7 @@ contract PresiSimToken is ERC20, Ownable {
     HybridAccount public HA;
 
     uint256 public currentGameID = 0;
+    string public currentQuestion;
     mapping (uint256 => mapping(address => string)) public answers;
     mapping(uint256 => mapping(address => bool)) public hasPlayed;
     mapping(address => uint256) public consecutiveGamesPlayed;
@@ -61,6 +62,8 @@ contract PresiSimToken is ERC20, Ownable {
         newGame.timeOfFetch = block.timestamp;
 
         currentGameID = games.length - 1;
+        currentQuestion = question;
+
         emit DailyQuestionUpdated(question);
     }
 
