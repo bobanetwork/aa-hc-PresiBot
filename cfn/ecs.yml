@@ -200,6 +200,8 @@ Resources:
           Environment:
             - Name: OC_LISTEN_PORT
               Value: 1234
+            - Name: FORCE_UPDATE
+              Value: "true"
           PortMappings:
             - ContainerPort: 1234
 
