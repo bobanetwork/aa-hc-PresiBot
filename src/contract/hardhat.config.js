@@ -3,15 +3,42 @@ require('dotenv').config();
 
 const { PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
+require('dotenv').config();
+require('hardhat-deploy');
+
+require("@nomicfoundation/hardhat-verify");
+
+/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: '0.8.20',
   networks: {
-    boba_sepolia: {
+    'boba-sepolia': {
       url: 'https://sepolia.boba.network',
       accounts: [PRIVATE_KEY],
     },
   },
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
+  paths: {
+    deploy: './deploy',
+    deployment: './deployment',
   },
+  namedAccounts: {
+    deployer: {
+      default: 0,
+    },
+  },
+  solidity: "0.8.20",
+  etherscan: {
+    apiKey: {
+      'boba-sepolia': 'NOT_NEEDED'
+    },
+    customChains: [
+      {
+        network: "boba-sepolia",
+        chainId: 28882,
+        urls: {
+          apiURL: "https://api.routescan.io/v2/network/testnet/evm/28882/etherscan/api",
+          browserURL: "https://testnet.bobascan.com/"
+        }
+      }
+    ]
+  }
 };

@@ -7,3 +7,4 @@ cache
 src/.DS_Store
 src/contract/.DS_Store
 src/contract/node_modules
+src/contract/.env
