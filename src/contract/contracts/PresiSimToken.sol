@@ -24,6 +24,7 @@ contract PresiSimToken is ERC20, Ownable {
     struct Game {
         string question;
         uint timeOfFetch;
+        address winner;
         GameAnswer[] answers;
     }
 
@@ -34,7 +35,7 @@ contract PresiSimToken is ERC20, Ownable {
     mapping(address => uint256) public rewards;
 
     event DailyQuestionUpdated(string question);
-    event GameResultsSubmitted(uint256 gameID, string results);
+    event GameResultsSubmitted(uint256 gameID, address winner);
     event PlayerSubmittedAnswer(uint256 indexed gameID, address player, string answer);
     event RewardClaimed(address user, uint256 amount);
 
@@ -63,7 +64,19 @@ contract PresiSimToken is ERC20, Ownable {
      */
     function submitResults() external onlyOwner {
         uint256 currentGameID = games.length - 1;
-        emit GameResultsSubmitted(currentGameID, "Results submitted to on-chain component");
+        
+        address winner; 
+        bytes memory req = abi.encodeWithSignature("selectBestAnswer()");
+        bytes32 userKey = bytes32(abi.encode(msg.sender));
+        (uint32 error, bytes memory ret) = HA.CallOffchain(userKey, req);
+
+         if (error == 0) {
+            winner = abi.decode(ret,(address)); 
+            _mint(winner, dailyReward);
+            games[currentGameID].winner = winner;
+         }
+
+        emit GameResultsSubmitted(currentGameID,winner);
     }
 
     /**
@@ -131,5 +144,10 @@ contract PresiSimToken is ERC20, Ownable {
     {
         uint256 currentGameID = games.length - 1;
         return games[currentGameID].question;
+    }
+
+    function getWinnerByGameID(uint gameID) external view returns(address)
+    {
+        return games[gameID].winner;
     }
 }
