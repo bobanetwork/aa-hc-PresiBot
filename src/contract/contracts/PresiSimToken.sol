@@ -13,8 +13,6 @@ contract PresiSimToken is ERC20, Ownable {
     uint256 public dailyReward = 100 * (10 ** 18); // Daily reward, adjustable
     uint256 public referralReward = 10 * (10 ** 18); // Referral reward, adjustable
     uint256 public consecutiveReward = 5 * (10 ** 18); // 7 Days consecutive reward, adjustable
-    address payable demoAddr = payable(0x75b798049F6E09fb051a3c66EdceE32B76a90391);
-    HybridAccount HA = HybridAccount(demoAddr);
 
     struct GameAnswer {
         address user;
@@ -29,6 +27,7 @@ contract PresiSimToken is ERC20, Ownable {
     }
 
     Game[] public games;
+    HybridAccount public HA;
 
     mapping(uint256 => mapping(address => bool)) public hasPlayed;
     mapping(address => uint256) public consecutiveGamesPlayed;
@@ -39,18 +38,21 @@ contract PresiSimToken is ERC20, Ownable {
     event PlayerSubmittedAnswer(uint256 indexed gameID, address player, string answer);
     event RewardClaimed(address user, uint256 amount);
 
-    constructor() ERC20("PresiSim Token", "PST") Ownable(msg.sender) {}
+    constructor(address _demoAddr) ERC20("PresiSim Token", "PST") Ownable(msg.sender) {
+        address payable demoAddr = payable(_demoAddr);
+        HA = HybridAccount(demoAddr);
+    }
     /**
      * @notice Fetches the daily question from the backend
      */
     function getDailyQuestion() external onlyOwner {
-        string memory question; 
+        string memory question;
         bytes memory req = abi.encodeWithSignature("createQuestion()");
         bytes32 userKey = bytes32(abi.encode(msg.sender));
         (uint32 error, bytes memory ret) = HA.CallOffchain(userKey, req);
 
          if (error == 0) {
-           question = abi.decode(ret,(string)); 
+           question = abi.decode(ret,(string));
          }
 
         Game storage newGame = games.push();
@@ -64,14 +66,14 @@ contract PresiSimToken is ERC20, Ownable {
      */
     function submitResults() external onlyOwner {
         uint256 currentGameID = games.length - 1;
-        
-        address winner; 
+
+        address winner;
         bytes memory req = abi.encodeWithSignature("selectBestAnswer()");
         bytes32 userKey = bytes32(abi.encode(msg.sender));
         (uint32 error, bytes memory ret) = HA.CallOffchain(userKey, req);
 
          if (error == 0) {
-            winner = abi.decode(ret,(address)); 
+            winner = abi.decode(ret,(address));
             _mint(winner, dailyReward);
             games[currentGameID].winner = winner;
          }
