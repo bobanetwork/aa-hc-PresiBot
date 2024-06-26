@@ -23,12 +23,12 @@ contract PresiSimToken is ERC20, Ownable {
         string question;
         uint timeOfFetch;
         address winner;
-        GameAnswer[] answers;
     }
 
     Game[] public games;
     HybridAccount public HA;
 
+    mapping (uint256 => mapping(address => string)) public answers;
     mapping(uint256 => mapping(address => bool)) public hasPlayed;
     mapping(address => uint256) public consecutiveGamesPlayed;
     mapping(address => uint256) public rewards;
@@ -90,7 +90,7 @@ contract PresiSimToken is ERC20, Ownable {
         require(!hasPlayed[currentGameID][msg.sender], "You have already played today");
 
         hasPlayed[currentGameID][msg.sender] = true;
-        games[currentGameID].answers.push(GameAnswer({user: msg.sender, answer: answer}));
+        answers[currentGameID][msg.sender] = answer;
 
         if (currentGameID == 0 || hasPlayed[currentGameID - 1][msg.sender]) {
             consecutiveGamesPlayed[msg.sender]++;
