@@ -28,6 +28,7 @@ contract PresiSimToken is ERC20, Ownable {
     Game[] public games;
     HybridAccount public HA;
 
+    uint256 public currentGameID = 0;
     mapping (uint256 => mapping(address => string)) public answers;
     mapping(uint256 => mapping(address => bool)) public hasPlayed;
     mapping(address => uint256) public consecutiveGamesPlayed;
@@ -58,6 +59,8 @@ contract PresiSimToken is ERC20, Ownable {
         Game storage newGame = games.push();
         newGame.question = question;
         newGame.timeOfFetch = block.timestamp;
+
+        currentGameID = games.length - 1;
         emit DailyQuestionUpdated(question);
     }
 
@@ -65,8 +68,6 @@ contract PresiSimToken is ERC20, Ownable {
      * @notice Submits the game results to the backend
      */
     function submitResults() external onlyOwner {
-        uint256 currentGameID = games.length - 1;
-
         address winner;
         bytes memory req = abi.encodeWithSignature("selectBestAnswer()");
         bytes32 userKey = bytes32(abi.encode(msg.sender));
@@ -86,7 +87,6 @@ contract PresiSimToken is ERC20, Ownable {
      * @param answer Player's answer
      */
     function submitByPlayer(string calldata answer) external {
-        uint256 currentGameID = games.length - 1;
         require(!hasPlayed[currentGameID][msg.sender], "You have already played today");
 
         hasPlayed[currentGameID][msg.sender] = true;
@@ -144,7 +144,6 @@ contract PresiSimToken is ERC20, Ownable {
 
     function getCurrentQuesiton() external view returns(string memory)
     {
-        uint256 currentGameID = games.length - 1;
         return games[currentGameID].question;
     }
 

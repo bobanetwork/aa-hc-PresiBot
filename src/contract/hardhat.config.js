@@ -1,7 +1,4 @@
-// require('@nomiclabs/hardhat-toolbox');
-require('dotenv').config();
-
-const { PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
+require("@nomicfoundation/hardhat-toolbox");
 
 require('dotenv').config();
 require('hardhat-deploy');
@@ -13,7 +10,7 @@ module.exports = {
   networks: {
     'boba-sepolia': {
       url: 'https://sepolia.boba.network',
-      accounts: [PRIVATE_KEY],
+      accounts: [process.env.PRIVATE_KEY_DEPLOYER || ethers.constants.HashZero],
     },
   },
   paths: {
@@ -25,7 +22,7 @@ module.exports = {
       default: 0,
     },
   },
-  solidity: "0.8.20",
+  solidity: "0.8.24",
   etherscan: {
     apiKey: {
       'boba-sepolia': 'NOT_NEEDED'
