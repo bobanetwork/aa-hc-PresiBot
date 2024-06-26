@@ -32,7 +32,7 @@ contract PresiSimToken is ERC20, Ownable {
 
     event DailyQuestionUpdated(string question);
     event GameResultsSubmitted(uint256 gameID, string results);
-    event PlayerSubmittedAnswer(uint256 gameID, address player, address referral, string answer);
+    event PlayerSubmittedAnswer(uint256 indexed gameID, address player, string answer);
     event RewardClaimed(address user, uint256 amount);
 
     constructor() ERC20("PresiSim Token", "PST") Ownable(msg.sender) {}
@@ -58,19 +58,14 @@ contract PresiSimToken is ERC20, Ownable {
 
     /**
      * @notice Allows a player to submit their answer and handle referrals
-     * @param referralAddress Address of the referrer
      * @param answer Player's answer
      */
-    function submitByPlayer(address referralAddress, string calldata answer) external {
+    function submitByPlayer(string calldata answer) external {
         uint256 currentGameID = games.length - 1;
         require(!hasPlayed[currentGameID][msg.sender], "You have already played today");
 
         hasPlayed[currentGameID][msg.sender] = true;
         games[currentGameID].answers.push(GameAnswer({user: msg.sender, answer: answer}));
-
-        if (referralAddress != address(0)) {
-            rewards[referralAddress] += referralReward;
-        }
 
         if (currentGameID == 0 || hasPlayed[currentGameID - 1][msg.sender]) {
             consecutiveGamesPlayed[msg.sender]++;
@@ -82,7 +77,7 @@ contract PresiSimToken is ERC20, Ownable {
             consecutiveGamesPlayed[msg.sender] = 0;
         }
 
-        emit PlayerSubmittedAnswer(currentGameID, msg.sender, referralAddress, answer);
+        emit PlayerSubmittedAnswer(currentGameID, msg.sender, answer);
     }
 
     /**
