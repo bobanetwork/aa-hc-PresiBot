@@ -34,16 +34,16 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
     try:
       req = parse_req(sk, src_addr, src_nonce, oo_nonce, payload)
 
-      # Prepare the prompt
-      prompt = prompt_template
+      # # Prepare the prompt
+      # prompt = prompt_template
 
-      # Create the conversation chain
-      conversation = ConversationChain(llm=openai_model, verbose=True)
+      # # Create the conversation chain
+      # conversation = ConversationChain(llm=openai_model, verbose=True)
 
-      # Generate a response from the model
-      response = conversation.run(input=prompt)
-      print("Open AI daily question:", response)
-      resp = ethabi.encode(["string"], [response])
+      # # Generate a response from the model
+      # response = conversation.run(input=prompt)
+      # print("Open AI daily question:", response)
+      resp = ethabi.encode(["string"], ["hello world"])
       err_code = 0
     except Exception as e:
         print("DECODE FAILED", e)
