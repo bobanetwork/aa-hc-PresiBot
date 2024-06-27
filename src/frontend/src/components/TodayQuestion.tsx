@@ -1,6 +1,6 @@
 import { MetaMaskContext } from '@/hooks/MetamaskContext';
 import { fetchDailyReward, fetchQuestionAnswer, fetchTodaysQuestion, fetchTodaysQuestionPlayed } from '@/services';
-import { formatEther } from 'ethers';
+import { AbiCoder, concat, formatEther, FunctionFragment, hexlify } from 'ethers';
 import { useContext, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import {
@@ -11,6 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
+import { defaultSnapOrigin, PRESI_SIM_TOKEN_CONTRACT } from '@/config/snap';
+import { useToast } from './ui/use-toast';
 
 function getQuery(url: string, q: string = 'start') {
   return (url.match(new RegExp('[?&]' + q + '=([^&]+)')) || [, null])[1];
@@ -33,6 +35,10 @@ const TodayQuestion = ({
   const [gameReward, setGameReward] = useState<string>('');
 
   const [state] = useContext(MetaMaskContext);
+
+  const abiCoder = new AbiCoder();
+
+  const { toast } = useToast()
 
   useEffect(() => {
     const referrer = getQuery(window.location.toString())
@@ -69,12 +75,64 @@ const TodayQuestion = ({
 
   }, [])
 
-  const onSubmitAnswer = () => {
-    console.log(`submit answer to snap`, answer, referralAddress);
-    setLoading(true);
-    setTimeout(() => {
+  const onSubmitAnswer = async () => {
+    try {
+      console.log(`submit answer to snap`, answer, referralAddress);
+      setLoading(true);
+
+      if (!state.selectedAcount || Number(state.chain) !== 28882) {
+        console.log(`account not connected`)
+        return;
+      }
+      if (!answer) {
+        console.log(`invalid answer`)
+        return;
+      }
+
+      const funcSelector = FunctionFragment.getSelector("submitByPlayer", ["string"]);
+
+      const encodedParams = abiCoder.encode(
+        ['string'],
+        [answer],
+      );
+
+      const txData = hexlify(concat([funcSelector, encodedParams]));
+
+      const transactionDetails = {
+        payload: {
+          to: PRESI_SIM_TOKEN_CONTRACT,
+          value: '0',
+          data: txData,
+        },
+        account: state.selectedAcount.id,
+        scope: `eip155:${state.chain}`,
+      };
+
+      const txResponse = await window.ethereum?.request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId: defaultSnapOrigin,
+          request: {
+            method: 'eth_sendUserOpBoba', // operation to send the data to bundler
+            params: [transactionDetails],
+            id: state.selectedAcount?.id,
+          },
+        },
+      })
+      console.log(`txResponse`, txResponse);
+      toast({
+        title: '✅ Submitted Successfully!',
+        description: `Your answer has been submitted successfully. If you win today's game, your reward will be automatically credited.`
+      })
       setLoading(false);
-    }, 1000);
+    } catch (error) {
+      console.log(`submit answer failed`, error);
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: "Please maitain enough Sepo ETH or something else wrong!",
+      })
+      setLoading(false);
+    }
   }
 
   return (

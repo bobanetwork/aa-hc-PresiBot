@@ -28,7 +28,7 @@ function App() {
         <div className="min-h-screen">
           <div className="gradient-bg-welcome mb-6">
             <Navbar />
-            <Alert />
+            {/* <Alert /> */}
           </div>
           <NetworkAlert />
           {layoutView === LAYOUT_VIEW.HOME && <EntryComponent
