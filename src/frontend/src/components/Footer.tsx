@@ -7,8 +7,6 @@ const Footer = () => {
 
   const [state] = useContext(MetaMaskContext)
 
-  console.log(`state`, state)
-
   return (
     <div className="flex flex-col w-full py-4 fixed bottom-0">
       <hr className="dark:border-black-700 lg:my-6" />

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@metamask/keyring-api": "^8.0.0",
+    "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-slot": "^1.0.2",
     "autoprefixer": "^10.4.19",
     "class-variance-authority": "^0.7.0",
