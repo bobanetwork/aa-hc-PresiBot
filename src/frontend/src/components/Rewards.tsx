@@ -1,5 +1,5 @@
 import { MetaMaskContext } from '@/hooks/MetamaskContext';
-import { fetchRewards } from '@/services';
+import { fetchBalance } from '@/services';
 import { formatEther } from 'ethers';
 import { useContext, useEffect, useState } from 'react';
 import { Button } from './ui/button';
@@ -17,7 +17,7 @@ const UserRewards = ({
   onClose?: () => void
 }) => {
 
-  const [reward, setReward] = useState<string>('0.0');
+  const [balance, setBalance] = useState<string>('0.0');
   const [state] = useContext(MetaMaskContext);
 
   useEffect(() => {
@@ -25,8 +25,8 @@ const UserRewards = ({
     const loadData = async () => {
       try {
         if (state.selectedAcount?.address) {
-          const userReward = await fetchRewards(state.selectedAcount.address);
-          setReward(formatEther(userReward.toString()));
+          const tokenBalance = await fetchBalance(state.selectedAcount.address);
+          setBalance(formatEther(tokenBalance.toString()));
         }
       } catch (error) {
         console.log(`load rewards`, error);
@@ -43,7 +43,7 @@ const UserRewards = ({
           💰
         </CardTitle>
         <Card className='w-6/12 m-auto'>
-          <CardDescription className="text-3xl bold italic">{reward}</CardDescription>
+          <CardDescription className="text-3xl bold italic">{balance}</CardDescription>
           <CardDescription className="text-sm italic">PresiSimToken Balance</CardDescription>
         </Card>
       </CardHeader>

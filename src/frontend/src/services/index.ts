@@ -49,9 +49,9 @@ export const fetchConsecutiveGamesPlayed = async (address: string) => {
   return await contract.consecutiveGamesPlayed(address)
 }
 
-export const fetchRewards = async (address: string) => {
+export const fetchBalance = async (address: string) => {
   const contract = await tokenContract();
-  return await contract.rewards(address)
+  return await contract.balanceOf(address)
 }
 export const fetchWinner = async () => {
   const contract = await tokenContract();
