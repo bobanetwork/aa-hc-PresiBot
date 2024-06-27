@@ -1,7 +1,7 @@
 import { defaultSnapOrigin, PRESI_SIM_TOKEN_CONTRACT } from '@/config/snap';
 import { MetaMaskContext } from '@/hooks/MetamaskContext';
 import { fetchDailyReward, fetchQuestionAnswer, fetchTodaysQuestion, fetchTodaysQuestionPlayed, fetchWinner } from '@/services';
-import { AbiCoder, concat, formatEther, FunctionFragment, hexlify } from 'ethers';
+import { AbiCoder, concat, formatEther, FunctionFragment, hexlify, ZeroAddress } from 'ethers';
 import { useContext, useEffect, useState } from 'react';
 import truncateEthAddress from 'truncate-eth-address';
 import { Button } from './ui/button';
@@ -57,8 +57,8 @@ const TodayQuestion = ({
           const dailyReward = await fetchDailyReward();
           const todaysQuestion = await fetchTodaysQuestion();
           const winnedBy = await fetchWinner()
-          setWinner(winnedBy);
-          if (winnedBy) {
+          if (winnedBy && winnedBy !== ZeroAddress) {
+            setWinner(winnedBy);
             const submittedAnswer = await fetchQuestionAnswer(winnedBy)
             setAnswer(submittedAnswer);
           } else if (gamePlayed) {
@@ -150,7 +150,9 @@ const TodayQuestion = ({
         </CardTitle>
 
         {winner ?
-          <p className="text-lg font-bold text-green-600">Winner of the Todays question {truncateEthAddress(winner)}!</p>
+          winner === state.selectedAcount?.address ?
+            <p className="text-lg font-bold text-green-600">Congratulation you have won!</p>
+            : <p className="text-lg font-bold text-green-600">Winner of the Todays question {truncateEthAddress(winner)}!</p>
           : <CardDescription className="text-sm italic">Test your Presidential skills and win <b>{gameReward} Tokens</b></CardDescription>
         }
       </CardHeader>
