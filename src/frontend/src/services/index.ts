@@ -26,7 +26,7 @@ export const fetchConsecutiveReward = async () => {
 }
 export const fetchTodaysQuestion = async () => {
   const contract = await tokenContract();
-  return await contract.currentQuestion()
+  return await contract.getCurrentQuesiton()
 }
 export const fetchTodaysGameId = async () => {
   const contract = await tokenContract();
@@ -56,6 +56,6 @@ export const fetchRewards = async (address: string) => {
 export const fetchWinner = async () => {
   const contract = await tokenContract();
   const gameId = await fetchTodaysGameId();
-  const games = await contract.games(gameId)
-  return games ? games[2] : null
+  const winner = await contract.getWinnerByGameID(gameId)
+  return winner || null;
 }

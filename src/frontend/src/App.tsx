@@ -10,6 +10,7 @@ import { MetaMaskProvider } from './hooks/MetamaskContext'
 import './styles/global.css'
 import InviteFriend from './components/InviteFriend'
 import UserRewards from './components/Rewards'
+import AdminView from './components/AdminView'
 
 enum LAYOUT_VIEW {
   HOME,
@@ -42,6 +43,7 @@ function App() {
             onClose={() => setLayoutView(LAYOUT_VIEW.HOME)} />}
           {layoutView === LAYOUT_VIEW.REWARD && <UserRewards
             onClose={() => setLayoutView(LAYOUT_VIEW.HOME)} />}
+          <AdminView />
 
           <Footer />
         </div>
