@@ -54,7 +54,8 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
       print("Open AI daily question:", response)
       daily_question[current_question] = response
 
-      resp = ethabi.encode(["string"], [response])
+      # resp = ethabi.encode(["string"], [response])
+      resp = ethabi.encode(["string"], ["hello"])
       err_code = 0
     except Exception as e:
         print("DECODE FAILED", e)
