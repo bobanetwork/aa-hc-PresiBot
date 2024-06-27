@@ -201,7 +201,7 @@ Resources:
             - Name: OC_LISTEN_PORT
               Value: 1234
             - Name: FORCE_UPDATE
-              Value: "true"
+              Value: "false"
           PortMappings:
             - ContainerPort: 1234
 
