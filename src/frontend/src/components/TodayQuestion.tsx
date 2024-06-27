@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import {
   Card,
@@ -9,6 +9,10 @@ import {
   CardTitle,
 } from './ui/card';
 
+function getQuery(url: string, q: string = 'start') {
+  return (url.match(new RegExp('[?&]' + q + '=([^&]+)')) || [, null])[1];
+}
+
 const TodayQuestion = ({
   onClose
 }: {
@@ -16,11 +20,20 @@ const TodayQuestion = ({
 }) => {
 
   const [answer, setAnswer] = useState<string>('')
+  // @ts-ignore
   const [isAnswered, setIsAnswered] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
+  const [referralAddress, setReferralAddress] = useState<string>('0x')
+
+  useEffect(() => {
+    const referrer = getQuery(window.location.toString())
+    if (referrer) {
+      setReferralAddress(referrer as unknown as string)
+    }
+  }, [])
 
   const onSubmitAnswer = () => {
-    console.log(`submit answer to snap`, answer);
+    console.log(`submit answer to snap`, answer, referralAddress);
     setLoading(true);
     setTimeout(() => {
       setLoading(false);

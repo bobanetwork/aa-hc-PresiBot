@@ -8,6 +8,8 @@ import Footer from './components/Footer'
 import TodayQuestion from './components/TodayQuestion'
 import { MetaMaskProvider } from './hooks/MetamaskContext'
 import './styles/global.css'
+import InviteFriend from './components/InviteFriend'
+import UserRewards from './components/Rewards'
 
 enum LAYOUT_VIEW {
   HOME,
@@ -36,8 +38,11 @@ function App() {
           />}
           {layoutView === LAYOUT_VIEW.QUESTION && <TodayQuestion
             onClose={() => setLayoutView(LAYOUT_VIEW.HOME)} />}
-          {/* <FormComponent /> */}
-          {/* <ResultComponent /> */}
+          {layoutView === LAYOUT_VIEW.INVITE && <InviteFriend
+            onClose={() => setLayoutView(LAYOUT_VIEW.HOME)} />}
+          {layoutView === LAYOUT_VIEW.REWARD && <UserRewards
+            onClose={() => setLayoutView(LAYOUT_VIEW.HOME)} />}
+
           <Footer />
         </div>
       </MetaMaskProvider>
