@@ -15,8 +15,8 @@ class RequestHandler(SimpleJSONRPCRequestHandler):
 def server_loop():
     server = SimpleJSONRPCServer(('0.0.0.0', 1234), requestHandler=RequestHandler)
     # register function here
-    server.register_function(openai_create_question, selector("createQuestion(string)"))
-    server.register_function(select_best_answer, selector("selectBestAnswer(string)"))
+    server.register_function(openai_create_question, selector("createQuestion()"))
+    server.register_function(select_best_answer, selector("selectBestAnswer()"))
     print("Serving ")
     print("PORT => {}".format(1234))
     server.serve_forever()
