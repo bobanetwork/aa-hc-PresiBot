@@ -26,7 +26,7 @@ function App() {
   return (
     <>
       <MetaMaskProvider>
-        <div className="min-h-screen">
+        <div className="min-h-screen background-grid">
           <div className="gradient-bg-welcome mb-6">
             <Navbar />
             {/* <Alert /> */}
