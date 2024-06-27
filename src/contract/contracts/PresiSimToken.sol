@@ -49,9 +49,9 @@ contract PresiSimToken is ERC20, Ownable {
     /**
      * @notice Fetches the daily question from the backend
      */
-    function getDailyQuestion(string memory _placeholder) external /** onlyOwner */ {
+    function getDailyQuestion() external /** onlyOwner */ {
         string memory question;
-        bytes memory req = abi.encodeWithSignature("createQuestion(string)", _placeholder);
+        bytes memory req = abi.encodeWithSignature("createQuestion()");
         bytes32 userKey = bytes32(abi.encode(msg.sender));
         (uint32 err, bytes memory ret) = HA.CallOffchain(userKey, req);
 
@@ -75,9 +75,9 @@ contract PresiSimToken is ERC20, Ownable {
     /**
      * @notice Submits the game results to the backend
      */
-    function submitResults(string memory _placeholder) external /** onlyOwner */ {
+    function submitResults() external /** onlyOwner */ {
         address winner;
-        bytes memory req = abi.encodeWithSignature("selectBestAnswer(string)", _placeholder);
+        bytes memory req = abi.encodeWithSignature("selectBestAnswer()");
         bytes32 userKey = bytes32(abi.encode(msg.sender));
         (uint32 err, bytes memory ret) = HA.CallOffchain(userKey, req);
 
