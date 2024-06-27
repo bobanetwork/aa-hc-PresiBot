@@ -11,7 +11,11 @@
   },
   "dependencies": {
     "@metamask/keyring-api": "^8.0.0",
+    "@radix-ui/react-dialog": "^1.1.1",
+    "@radix-ui/react-scroll-area": "^1.1.0",
+    "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-toast": "^1.2.1",
     "autoprefixer": "^10.4.19",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
