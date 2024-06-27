@@ -53,3 +53,9 @@ export const fetchRewards = async (address: string) => {
   const contract = await tokenContract();
   return await contract.rewards(address)
 }
+export const fetchWinner = async () => {
+  const contract = await tokenContract();
+  const gameId = await fetchTodaysGameId();
+  const games = await contract.games(gameId)
+  return games ? games[2] : null
+}

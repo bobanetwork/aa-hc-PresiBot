@@ -1,7 +1,9 @@
+import { defaultSnapOrigin, PRESI_SIM_TOKEN_CONTRACT } from '@/config/snap';
 import { MetaMaskContext } from '@/hooks/MetamaskContext';
-import { fetchDailyReward, fetchQuestionAnswer, fetchTodaysQuestion, fetchTodaysQuestionPlayed } from '@/services';
+import { fetchDailyReward, fetchQuestionAnswer, fetchTodaysQuestion, fetchTodaysQuestionPlayed, fetchWinner } from '@/services';
 import { AbiCoder, concat, formatEther, FunctionFragment, hexlify } from 'ethers';
 import { useContext, useEffect, useState } from 'react';
+import truncateEthAddress from 'truncate-eth-address';
 import { Button } from './ui/button';
 import {
   Card,
@@ -11,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
-import { defaultSnapOrigin, PRESI_SIM_TOKEN_CONTRACT } from '@/config/snap';
 import { useToast } from './ui/use-toast';
 
 function getQuery(url: string, q: string = 'start') {
@@ -33,6 +34,7 @@ const TodayQuestion = ({
   // @ts-ignore
   const [question, setQuestion] = useState<string>('');
   const [gameReward, setGameReward] = useState<string>('');
+  const [winner, setWinner] = useState<string>('');
 
   const [state] = useContext(MetaMaskContext);
 
@@ -54,9 +56,13 @@ const TodayQuestion = ({
           const gamePlayed = await fetchTodaysQuestionPlayed(state.selectedAcount?.address)
           const dailyReward = await fetchDailyReward();
           const todaysQuestion = await fetchTodaysQuestion();
-          if (gamePlayed) {
+          const winnedBy = await fetchWinner()
+          setWinner(winnedBy);
+          if (winnedBy) {
+            const submittedAnswer = await fetchQuestionAnswer(winnedBy)
+            setAnswer(submittedAnswer);
+          } else if (gamePlayed) {
             const submittedAnswer = await fetchQuestionAnswer(state.selectedAcount?.address)
-            console.log(`submittedAnswer`, submittedAnswer)
             setAnswer(submittedAnswer);
           }
 
@@ -73,7 +79,7 @@ const TodayQuestion = ({
 
     loadData()
 
-  }, [])
+  }, [state.selectedAcount])
 
   const onSubmitAnswer = async () => {
     try {
@@ -125,6 +131,7 @@ const TodayQuestion = ({
         description: `Your answer has been submitted successfully. If you win today's game, your reward will be automatically credited.`
       })
       setLoading(false);
+      setIsAnswered(true);
     } catch (error) {
       console.log(`submit answer failed`, error);
       toast({
@@ -141,35 +148,44 @@ const TodayQuestion = ({
         <CardTitle className="w-2/12 mx-auto text-6xl hover:italic">
           📝
         </CardTitle>
-        <CardDescription className="text-sm italic">Test your Presidential skills and win <b>{gameReward} Tokens</b></CardDescription>
+
+        {winner ?
+          <p className="text-lg font-bold text-green-600">Winner of the Todays question {truncateEthAddress(winner)}!</p>
+          : <CardDescription className="text-sm italic">Test your Presidential skills and win <b>{gameReward} Tokens</b></CardDescription>
+        }
       </CardHeader>
       <CardContent className="flex flex-col w-11/12 gap-2 mx-auto">
-        <CardDescription className="text-lg text-black">{question}</CardDescription>
+        <CardDescription className={`text-lg text-black ${winner && 'font-light text-teal-900 italic'}`}>{question}</CardDescription>
         <textarea
           disabled={isAnswered || loading}
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder='Your views..'
-          className="w-full min-h-60 border rounded p-4 text-left" >
+          className={`w-full min-h-60 border rounded p-4 text-left ${winner && 'font-light text-teal-900 italic'}`} >
         </textarea>
-        {loading && question && <p className="text-sm italic">Submitting answer...</p>}
+        {loading && question && <p className="text-sm italic">Please wait loading...</p>}
       </CardContent>
-      {isAnswered &&
+      {isAnswered && !winner &&
         <CardFooter className="flex gap-2 justify-center w-11/12 mx-auto">
           <p className="text-md text-green-500">You have submitted answer for todays question!</p>
         </CardFooter>
       }
-      {!isAnswered &&
-        <CardFooter className="flex gap-2 justify-end w-11/12 mx-auto">
+      <CardFooter className="flex flex-col gap-2 justify-end w-11/12 mx-auto">
+        {winner && !loading &&
+          <p className="text-sm">Please visit again for next question tomorrow!</p>}
+        <div className="flex w-full gap-2 justify-center">
           <Button className="w-4/12"
             disabled={loading}
             variant="outline"
-            onClick={onClose}>Cancel</Button>
+            onClick={onClose}>Back To Home</Button>
+          {!isAnswered &&
           <Button className="w-4/12"
             disabled={loading}
             variant="destructive"
             onClick={onSubmitAnswer}>Submit Answer</Button>
-        </CardFooter>}
+          }
+        </div>
+      </CardFooter>
     </Card>
   );
 }

@@ -1,3 +1,5 @@
+import { MetaMaskContext } from '@/hooks/MetamaskContext';
+import { fetchConsecutiveGamesPlayed } from '@/services';
 import { useContext, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import {
@@ -8,9 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
-import { MetaMaskContext } from '@/hooks/MetamaskContext';
-import { fetchConsecutiveGamesPlayed } from '@/services';
-import { formatEther } from 'ethers';
 
 const EntryComponent = ({
   toQuestion,
@@ -28,17 +27,19 @@ const EntryComponent = ({
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log(`fetching games`, state.selectedAcount)
         if (state.selectedAcount?.address) {
+          console.log(`loading consecutive game played`);
           const gamesPlayed = await fetchConsecutiveGamesPlayed(state.selectedAcount.address);
           console.log(`number of games played`, gamesPlayed)
-          setconsecutive(formatEther(gamesPlayed).toString());
+          setconsecutive(gamesPlayed.toString());
         }
       } catch (error) {
         console.log(`laoding consecutive plays`, error)
       }
     }
     loadData();
-  }, []);
+  }, [state.selectedAcount]);
 
   return (
     <Card className='w-6/12 m-auto'>

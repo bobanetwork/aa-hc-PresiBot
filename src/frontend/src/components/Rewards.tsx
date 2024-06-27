@@ -40,7 +40,7 @@ const UserRewards = ({
       }
     }
     loadData()
-  }, [])
+  }, [state.selectedAcount])
 
 
   return (
