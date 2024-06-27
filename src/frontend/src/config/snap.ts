@@ -15,3 +15,4 @@ export const snapPackageVersion = "1.1.3";
 // export const ADD_SUB_CONTRACT = '0x7A9c74bEa653bBa510aAAe280981C117bc92273D';
 
 export const ADD_SUB_CONTRACT = '0x63BceAfAF62fB12394ecbEf10dBF1c5c36ba8b38';
+export const PRESI_SIM_TOKEN_CONTRACT = '0xD64B48d895AeA61488603b3a76E0Edb955466355';

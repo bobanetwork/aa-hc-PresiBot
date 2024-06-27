@@ -1,4 +1,7 @@
+import { PRESI_SIM_TOKEN_CONTRACT } from '@/config/snap';
+import { BrowserProvider, Contract } from 'ethers';
 import { useEffect, useState } from 'react';
+import PresiSimTokenAbi from '../../../contract/deployments/boba-sepolia/PresiSimToken.json';
 import { Button } from './ui/button';
 import {
   Card,
@@ -25,11 +28,29 @@ const TodayQuestion = ({
   const [loading, setLoading] = useState<boolean>(false)
   const [referralAddress, setReferralAddress] = useState<string>('0x')
 
+  // @ts-ignore
+  const [question, setQuestion] = useState<string>('');
+
   useEffect(() => {
     const referrer = getQuery(window.location.toString())
     if (referrer) {
       setReferralAddress(referrer as unknown as string)
     }
+
+    const loadQuestion = async () => {
+      const provider = new BrowserProvider(window.ethereum, 'any')
+
+      const tokenContract = new Contract(
+        PRESI_SIM_TOKEN_CONTRACT,
+        PresiSimTokenAbi.abi,
+        provider
+      )
+
+      console.log(`calling tokenContract`, tokenContract);
+      const question = await tokenContract.currentQuestion();
+      console.log(`question`, question, question.toString());
+    }
+    loadQuestion()
   }, [])
 
   const onSubmitAnswer = () => {
