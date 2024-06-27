@@ -1,6 +1,6 @@
 import { defaultSnapOrigin, PRESI_SIM_TOKEN_CONTRACT } from '@/config/snap';
 import { MetaMaskContext } from '@/hooks/MetamaskContext';
-import { fetchDailyReward, fetchQuestionAnswer, fetchTodaysQuestion, fetchTodaysQuestionPlayed, fetchWinner } from '@/services';
+import { fetchDailyReward, fetchQuestionAnswer, fetchTodaysQuestion, fetchTodaysQuestionPlayed, fetchWinner, listenToAnswerSelection } from '@/services';
 import { AbiCoder, concat, formatEther, FunctionFragment, hexlify, ZeroAddress } from 'ethers';
 import { useContext, useEffect, useState } from 'react';
 import truncateEthAddress from 'truncate-eth-address';
@@ -61,14 +61,18 @@ const TodayQuestion = ({
             setWinner(winnedBy);
             const submittedAnswer = await fetchQuestionAnswer(winnedBy)
             setAnswer(submittedAnswer);
+            setIsAnswered(true);
           } else if (gamePlayed) {
             const submittedAnswer = await fetchQuestionAnswer(state.selectedAcount?.address)
             setAnswer(submittedAnswer);
+            setIsAnswered(gamePlayed);
           }
 
-          setIsAnswered(gamePlayed);
           setGameReward(formatEther(dailyReward).toString())
           setQuestion(todaysQuestion);
+          if (winnedBy === ZeroAddress) {
+            listenToAnswerSelection()
+          }
 
           setLoading(false);
         }

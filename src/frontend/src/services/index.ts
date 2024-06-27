@@ -44,6 +44,17 @@ export const fetchQuestionAnswer = async (address: string) => {
   const answer = await contract.answers(gameId, address);
   return answer;
 }
+export const listenToAnswerSelection = async () => {
+  const contract = await tokenContract();
+  contract.on('GameResultsSubmitted', (from, to, value, event) => {
+    console.log({
+      from: from,
+      to: to,
+      value: value.toString(),
+      data: event
+    });
+  })
+}
 export const fetchConsecutiveGamesPlayed = async (address: string) => {
   const contract = await tokenContract();
   return await contract.consecutiveGamesPlayed(address)
