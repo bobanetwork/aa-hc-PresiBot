@@ -1,7 +1,7 @@
-import { PRESI_SIM_TOKEN_CONTRACT } from '@/config/snap';
-import { BrowserProvider, Contract } from 'ethers';
-import { useEffect, useState } from 'react';
-import PresiSimTokenAbi from '../../../contract/deployments/boba-sepolia/PresiSimToken.json';
+import { MetaMaskContext } from '@/hooks/MetamaskContext';
+import { fetchDailyReward, fetchQuestionAnswer, fetchTodaysQuestion, fetchTodaysQuestionPlayed } from '@/services';
+import { formatEther } from 'ethers';
+import { useContext, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import {
   Card,
@@ -30,6 +30,9 @@ const TodayQuestion = ({
 
   // @ts-ignore
   const [question, setQuestion] = useState<string>('');
+  const [gameReward, setGameReward] = useState<string>('');
+
+  const [state] = useContext(MetaMaskContext);
 
   useEffect(() => {
     const referrer = getQuery(window.location.toString())
@@ -37,20 +40,33 @@ const TodayQuestion = ({
       setReferralAddress(referrer as unknown as string)
     }
 
-    const loadQuestion = async () => {
-      const provider = new BrowserProvider(window.ethereum, 'any')
+    const loadData = async () => {
+      try {
+        if (state.selectedAcount) {
+          setLoading(true);
 
-      const tokenContract = new Contract(
-        PRESI_SIM_TOKEN_CONTRACT,
-        PresiSimTokenAbi.abi,
-        provider
-      )
+          const gamePlayed = await fetchTodaysQuestionPlayed(state.selectedAcount?.address)
+          const dailyReward = await fetchDailyReward();
+          const todaysQuestion = await fetchTodaysQuestion();
+          if (gamePlayed) {
+            const submittedAnswer = await fetchQuestionAnswer(state.selectedAcount?.address)
+            console.log(`submittedAnswer`, submittedAnswer)
+            setAnswer(submittedAnswer);
+          }
 
-      console.log(`calling tokenContract`, tokenContract);
-      const question = await tokenContract.currentQuestion();
-      console.log(`question`, question, question.toString());
+          setIsAnswered(gamePlayed);
+          setGameReward(formatEther(dailyReward).toString())
+          setQuestion(todaysQuestion);
+
+          setLoading(false);
+        }
+      } catch (error) {
+        console.log(`load todays question`, error);
+      }
     }
-    loadQuestion()
+
+    loadData()
+
   }, [])
 
   const onSubmitAnswer = () => {
@@ -64,11 +80,13 @@ const TodayQuestion = ({
   return (
     <Card className='w-6/12 m-auto'>
       <CardHeader className="">
-        <CardTitle className="w-2/12 mx-auto text-6xl hover:italic">?</CardTitle>
-        <CardDescription className="text-sm italic">Test your Presidential skills?</CardDescription>
+        <CardTitle className="w-2/12 mx-auto text-6xl hover:italic">
+          📝
+        </CardTitle>
+        <CardDescription className="text-sm italic">Test your Presidential skills and win <b>{gameReward} Tokens</b></CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col w-11/12 gap-2 mx-auto">
-        <CardDescription className="text-lg font-bold text-black italic">What is your approach to reforming healthcare in the US?        </CardDescription>
+        <CardDescription className="text-lg text-black">{question}</CardDescription>
         <textarea
           disabled={isAnswered || loading}
           value={answer}
@@ -76,7 +94,7 @@ const TodayQuestion = ({
           placeholder='Your views..'
           className="w-full min-h-60 border rounded p-4 text-left" >
         </textarea>
-        {loading && <p className="text-sm italic">Submitting answer...</p>}
+        {loading && question && <p className="text-sm italic">Submitting answer...</p>}
       </CardContent>
       {isAnswered &&
         <CardFooter className="flex gap-2 justify-center w-11/12 mx-auto">
@@ -91,6 +109,7 @@ const TodayQuestion = ({
             onClick={onClose}>Cancel</Button>
           <Button className="w-4/12"
             disabled={loading}
+            variant="destructive"
             onClick={onSubmitAnswer}>Submit Answer</Button>
         </CardFooter>}
     </Card>

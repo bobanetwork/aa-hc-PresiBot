@@ -17,7 +17,8 @@ export const fetchDailyReward = async () => {
 }
 export const fetchReferralReward = async () => {
   const contract = await tokenContract();
-  return await contract.referralReward()
+  const reward = await contract.referralReward();
+  return Number(reward);
 }
 export const fetchConsecutiveReward = async () => {
   const contract = await tokenContract();
@@ -31,24 +32,24 @@ export const fetchTodaysGameId = async () => {
   const contract = await tokenContract();
   return await contract.currentGameID()
 }
-export const fetchTodaysQuestionPlayed = async () => {
+export const fetchTodaysQuestionPlayed = async (address: string) => {
   const contract = await tokenContract();
-  const playMap = await contract.hasPlayed()
-  console.log(`playMap`, playMap);
-  return false;
+  const gameId = await fetchTodaysGameId();
+  const hasPlayed = await contract.hasPlayed(gameId, address)
+  return hasPlayed;
 }
-export const fetchQuestionAnswer = async () => {
+export const fetchQuestionAnswer = async (address: string) => {
   const contract = await tokenContract();
-  const answers = await contract.answers()
-  console.log(`answers`, answers);
-  return false;
+  const gameId = await fetchTodaysGameId();
+  const answer = await contract.answers(gameId, address);
+  return answer;
 }
-export const fetchConsecutiveGamesPlayed = async () => {
+export const fetchConsecutiveGamesPlayed = async (address: string) => {
   const contract = await tokenContract();
-  return await contract.consecutiveGamesPlayed()
+  return await contract.consecutiveGamesPlayed(address)
 }
 
-export const fetchRewards = async () => {
+export const fetchRewards = async (address: string) => {
   const contract = await tokenContract();
-  return await contract.rewards()
+  return await contract.rewards(address)
 }

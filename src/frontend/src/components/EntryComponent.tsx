@@ -1,3 +1,4 @@
+import { useContext, useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import {
   Card,
@@ -7,6 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card';
+import { MetaMaskContext } from '@/hooks/MetamaskContext';
+import { fetchConsecutiveGamesPlayed } from '@/services';
+import { formatEther } from 'ethers';
 
 const EntryComponent = ({
   toQuestion,
@@ -17,20 +21,41 @@ const EntryComponent = ({
   toInvite: () => void,
   toReward: () => void,
 }) => {
+  const [consecutive, setconsecutive] = useState<string>('0');
+
+  const [state] = useContext(MetaMaskContext)
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        if (state.selectedAcount?.address) {
+          const gamesPlayed = await fetchConsecutiveGamesPlayed(state.selectedAcount.address);
+          console.log(`number of games played`, gamesPlayed)
+          setconsecutive(formatEther(gamesPlayed).toString());
+        }
+      } catch (error) {
+        console.log(`laoding consecutive plays`, error)
+      }
+    }
+    loadData();
+  }, []);
+
   return (
     <Card className='w-6/12 m-auto'>
       <CardHeader className="">
-        <CardTitle className="w-2/12 mx-auto text-6xl hover:italic">?</CardTitle>
-        <CardDescription className="text-lg italic">You're the US President</CardDescription>
-        <CardDescription className="text-xs italic">Step into the shoes of the President of the United States and navigate through the complex and exciting world of leadership. Make critical decisions, tackle national and international challenges, and see how your choices shape the future of the nation. Are you ready to lead?</CardDescription>
+        <CardTitle className="w-2/12 mx-auto text-8xl hover:italic">
+          🗳
+        </CardTitle>
+        <CardDescription className="text-md italic">Step into the shoes of the President of the United States and navigate through the complex and exciting world of leadership. Make critical decisions, tackle national and international challenges, and see how your choices shape the future of the nation. Are you ready to lead?</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col w-6/12 gap-2 mx-auto">
-        <Button onClick={toQuestion} className="w-full ">Todays Question</Button>
-        <Button onClick={toReward} className="w-full ">My Rewards</Button>
-        <Button onClick={toInvite} className="w-full ">Invite Friend</Button>
+      <CardContent className="flex flex-col w-8/12 gap-2 mx-auto">
+        <Button onClick={toQuestion} className="w-full" variant="destructive">Todays Question</Button>
+        <Button onClick={toReward} className="w-full" variant="destructive">My Rewards</Button>
+        <Button onClick={toInvite} className="w-full" variant="destructive">Invite Friend</Button>
       </CardContent>
-      <CardFooter>
-        <p className="text-xs text-center mx-auto italic">This game is a simulation designed for educational and entertainment purposes. The scenarios presented are fictional and may not reflect real-world events or situations.</p>
+      <CardFooter className="flex flex-col">
+        <CardDescription className="text-xl mb-2 text-black italic">You have played {consecutive} consecutive games till today!</CardDescription>
+        <p className="text-xs text-teal-500 text-center mx-auto italic">NOTE: This game is a simulation designed for educational and entertainment purposes. The scenarios presented are fictional and may not reflect real-world events or situations.</p>
       </CardFooter>
     </Card>
   );
