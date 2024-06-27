@@ -40,3 +40,13 @@
 .read-the-docs {
   color: #888;
 }
+
+
+.background-grid {
+  background-color: black;
+  background-image:
+  linear-gradient(to right, #afdb0140 4px, transparent 1px),
+  linear-gradient(to bottom, #AEDB0140 4px, transparent 1px);
+  background-size: 5rem 5rem;
+  background-position: center center;
+}
