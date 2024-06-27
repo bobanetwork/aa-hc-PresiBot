@@ -53,6 +53,7 @@ export const listenToAnswerSelection = async () => {
       value: value.toString(),
       data: event
     });
+    window.location.reload()
   })
 }
 export const fetchConsecutiveGamesPlayed = async (address: string) => {
