@@ -113,18 +113,15 @@ Resources:
       Description: !Ref Namespace
       ServiceRole: !GetAtt DockerBuildRole.Arn
       Artifacts:
-        Type: CODEPIPELINE   # Corrected to CODEPIPELINE
+        Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:5.0
         PrivilegedMode: true
-        EnvironmentVariables:
-          - Name: ECR_REPO_URI
-            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}
       Source:
-        Type: CODEPIPELINE  # Corrected to CODEPIPELINE
-        BuildSpec: |
+        Type: CODEPIPELINE
+        BuildSpec: !Sub |
           version: 0.2
           env:
             exported-variables:
@@ -133,14 +130,17 @@ Resources:
             pre_build:
               commands:
                 - echo "Logging in to Amazon ECR"
-                - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+                - export ECR_REPO=${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}
+                - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPO
             build:
               commands:
                 - echo "Building Docker Image"
                 - cd src/backend
-                - docker build -t $ECR_REPO_URI .
+                - docker build -t ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository} .
                 - echo "Pushing Docker Image"
-                - docker push $ECR_REPO_URI:latest
+                - docker push $ECR_REPO
+                - IMAGE_DIGEST="$(aws ecr describe-images --repository-name ${ECRRepository} --image-ids imageTag=latest --query 'imageDetails[0].imageDigest' --output text)"
+                - export ECR_REPO_URI=$ECR_REPO@$IMAGE_DIGEST
 
   FrontendBucket:
     Type: AWS::S3::Bucket
