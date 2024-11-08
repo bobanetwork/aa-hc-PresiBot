@@ -17,7 +17,7 @@ services:
     env: docker
     rootDirectory: frontend
     dockerfilePath: ./Dockerfile
-    buildCommand: docker build --build-arg NETWORK=${NETWORK} .
+    buildCommand: docker build --build-arg NETWORK=boba-sepolia .
     envVars:
       - key: NETWORK
         value: "boba-sepolia"
