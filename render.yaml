@@ -1,9 +1,13 @@
 services:
   - type: web
-    name: backend
+    name: your-backend-name
     env: docker
     rootDirectory: backend
     dockerfilePath: ./Dockerfile
     envVars:
       - key: OC_LISTEN_PORT
-        value: 1234
+        value: "1234"
+      - key: CHAIN_ID
+        value: "28882"
+      - key: STARTING_BLOCK
+        value: "0"
