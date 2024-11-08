@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: backend
+    env: docker
+    rootDirectory: backend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: OC_LISTEN_PORT
+        value: 1234
