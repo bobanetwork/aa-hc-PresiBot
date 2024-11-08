@@ -2,7 +2,7 @@
 FROM node:20-alpine AS build
 
 # Define build argument with a default value
-ARG NETWORK=mainnet
+ARG NETWORK=boba-sepolia
 
 # Set working directory
 WORKDIR /app
