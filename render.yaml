@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: your-backend-name
+    name: boba-blockchain-busters-backend
     env: docker
     rootDirectory: backend
     dockerfilePath: ./Dockerfile
@@ -11,3 +11,13 @@ services:
         value: "28882"
       - key: STARTING_BLOCK
         value: "0"
+  # Frontend service
+  - type: web
+    name: boba-blockchain-busters-frontend
+    env: docker
+    rootDirectory: frontend
+    dockerfilePath: ./Dockerfile
+    buildCommand: docker build --build-arg NETWORK=${NETWORK} .
+    envVars:
+      - key: NETWORK
+        value: "boba-sepolia"  # or whatever network you want to use
