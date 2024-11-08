@@ -20,4 +20,4 @@ services:
     buildCommand: docker build --build-arg NETWORK=${NETWORK} .
     envVars:
       - key: NETWORK
-        value: "boba-sepolia"  # or whatever network you want to use
+        value: "boba-sepolia"
