@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  # Nginx served static DApp
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NETWORK=boba-sepolia # boba-sepolia | local
+    image: bobanetwork/aa-hc-example-frontend
+    ports:
+      - "8000:80"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: aa-hc-network
+

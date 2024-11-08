@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  rundler-hc:
+    image: bobanetwork/rundler-hc:sepolia-rc14
+    environment:
+      HC_HELPER_ADDR: ${HC_HELPER_ADDR}  # Deployed contract address
+      HC_SYS_ACCOUNT: ${HC_SYS_ACCOUNT}  # Deployed contract address
+      HC_SYS_OWNER: ${HC_SYS_OWNER}    # Owner/Signer for HC_SYS_ACCOUNT
+      HC_SYS_PRIVKEY: ${HC_SYS_PRIVKEY}  # Owner/Signer for HC_SYS_ACCOUNT
+      ENTRY_POINTS: ${ENTRY_POINTS}    # Deployed contract address
+      BUILDER_PRIVATE_KEY: ${BUILDER_PRIVKEY} # Key for bundler EOA
+      NODE_HTTP: ${NODE_HTTP}       # Replica/Sequencer URL
+      CHAIN_ID: ${CHAIN_ID}        # Chain ID
+      RPC_PORT: 3300               # RPC port to submit into Bundler
+    ports:
+      - "3300:3300"
+
+  offchain-service:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    ports:
+      - "${OC_LISTEN_PORT:-1234}:${OC_LISTEN_PORT:-1234}"
+    env_file: ./backend/.env
+    volumes:
+      - ./backend/.env-local:/app/.env-local
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${OC_LISTEN_PORT:-1234}/hc"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NETWORK=local
+    image: bobanetwork/aa-hc-blockchain-busters-frontend
+    volumes:
+      - ./frontend/.env-local-local:/app/frontend/.env-local-local
+    ports:
+      - "8000:80"
+    restart: unless-stopped
+
+  snap-account-abstraction-keyring:
+    build:
+      context: ./snap-account-abstraction-keyring
+      dockerfile: Dockerfile
+      args:
+        - NETWORK=local
+    image: bobanetwork/snap-account-abstraction-keyring
+    ports:
+      - "8080:8080"
+      - "8001:8000"
+    volumes:
+      - ./snap-account-abstraction-keyring/packages/site/.env-local:/app/snap-account-abstraction-keyring/packages/site/.env-local
+      - ./snap-account-abstraction-keyring/packages/site/.env-local.development:/app/snap-account-abstraction-keyring/packages/site/.env-local.development
+      - ./snap-account-abstraction-keyring/packages/site/.env-local.development.hc:/app/snap-account-abstraction-keyring/packages/site/.env-local.development.hc
+      - ./snap-account-abstraction-keyring/packages/snap/.env-local-local:/app/snap-account-abstraction-keyring/packages/snap/.env-local-local
+    restart: unless-stopped
+
+networks:
+  default:
+    name: aa-hc-network
