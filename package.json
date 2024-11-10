@@ -1,0 +1,35 @@
+{
+  "name": "aa-hc-example",
+  "version": "1.0.0",
+  "description": "Full-stack example for Account Abstraction Hybrid Compute",
+  "scripts": {
+    "start:local": "cd contracts && npx pnpm compile && npx ts-node ./script/deploy-local.ts",
+    "start:local:ci": "cd contracts && npx pnpm compile && npx ts-node ./script/deploy-local.ts --ci=true && cd .. && docker-compose -f docker-compose.local.yml up -d --build",
+    "start:sepolia": "cd contracts && npx pnpm compile && npx ts-node ./script/deploy-sepolia.ts && cd ..",
+    "full-test": "cd contracts && npx pnpm compile && npx ts-node ./script/deploy-local.ts && cd .. && docker-compose -f docker-compose.local.yml up -d --build && cd contracts && yarn test-e2e",
+    "test": "pnpm test -r"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bobanetwork/aa-hc-example.git"
+  },
+  "workspaces": [
+    "backend",
+    "frontend",
+    "contracts"
+  ],
+  "keywords": [
+    "aa",
+    "hc",
+    "boba"
+  ],
+  "engines": {
+    "node": "^18.18 || >=20"
+  },
+  "author": "Boba Foundation",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bobanetwork/aa-hc-example/issues"
+  },
+  "homepage": "https://github.com/bobanetwork/aa-hc-example#readme"
+}

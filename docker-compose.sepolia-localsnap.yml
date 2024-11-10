@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # Nginx served static DApp
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NETWORK=boba-sepolia-snaplocal # boba-sepolia | local
+    image: bobanetwork/aa-hc-example-frontend
+    ports:
+      - "8000:80"
+    restart: unless-stopped
+
+  snap-account-abstraction-keyring:
+    build:
+      context: ./snap-account-abstraction-keyring
+      dockerfile: Dockerfile
+    image: bobanetwork/snap-account-abstraction-keyring
+    ports:
+      - "8080:8080"
+      - "8001:8000"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: aa-hc-network
+
