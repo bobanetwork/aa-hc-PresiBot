@@ -1,9 +1,9 @@
-import {Contract, JsonRpcProvider} from "ethers";
+import {BrowserProvider, Contract} from "ethers";
 import {PRESI_SIM_TOKEN_CONTRACT} from "@/config/snap";
 import PresiSimTokenAbi from "../abi/PresiSimToken.json"
 
 export const tokenContract = async () => {
-  const provider = new JsonRpcProvider('https://gateway.tenderly.co/public/boba-sepolia')
+  const provider = new BrowserProvider(window.ethereum, 'any')
   return new Contract(
       PRESI_SIM_TOKEN_CONTRACT,
       PresiSimTokenAbi as any,

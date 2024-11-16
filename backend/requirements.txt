@@ -13,4 +13,5 @@ langchain-core==0.2.7
 langchain==0.2.5
 openai==0.28.0
 hybrid_compute_sdk==0.2.14
+python-dotenv==1.0.0
 six==1.16.0
