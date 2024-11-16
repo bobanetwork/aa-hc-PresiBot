@@ -363,3 +363,8 @@ forge create contracts/test/TestKyc.sol:TestKyc  --private-key="YOUR_PRIVATE_KEY
 ```
 In this example, the `TestKyc.sol` contract takes in an **address** in the constructor.
 For more options on `forge create` please refer to this [guide](https://book.getfoundry.sh/reference/forge/forge-create).
+
+### Developer Notes Sepolia Deployment
+1. Install Dependencies
+2. Deploy on Sepolia with `pnpm deploy:local`
+3. Get the `HybridAccount` and the `Backend URL` and call `RegisterURL (Boba Team)`

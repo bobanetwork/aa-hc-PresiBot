@@ -20,8 +20,8 @@ contract DeployExample is Script {
 
     // Contracts
     address public entrypoint = vm.envAddress("ENTRY_POINT"); // system wide
-//    address public haFactory = address(0x3DD6EE2e539CCd7EaB881173fB704f766e877848); // System-wide Account factory, prior ?
-    address public haFactory = address(0x9406Cc6185a346906296840746125a0E44976454); // System-wide Account factory
+    //  address public haFactory = address(0x3DD6EE2e539CCd7EaB881173fB704f766e877848); // System-wide Account factory, prior ?
+    address public haFactory = address(0x3DD6EE2e539CCd7EaB881173fB704f766e877848); // System-wide Account factory
 
     // Contracts
     HybridAccount public hybridAccount;
@@ -43,12 +43,15 @@ contract DeployExample is Script {
 
         // Deploy using HybridAccountFactory, salt = block.number to force redeploy HybridAccount if already existing from this wallet
         hybridAccount = HybridAccountFactory(haFactory).createAccount(deployerAddress, block.number);
-        IEntryPoint(entrypoint).depositTo{value: 0.01 ether}(address(hybridAccount));
-        IEntryPoint(entrypoint).depositTo{value: 0.01 ether}(address(tokenPaymaster)); // might be redundant
-        tokenPaymaster.deposit{value: 0.01 ether}();
-
+        console.log("Account created");
         console.log(address(hybridAccount));
 
+//      fund the entrypoint to pay for operations for this hybridAccount
+        IEntryPoint(entrypoint).depositTo{value: 0.01 ether}(address(hybridAccount));
+        IEntryPoint(entrypoint).depositTo{value: 0.01 ether}(address(tokenPaymaster)); // might be redundant
+//      tokenPaymaster.deposit{value: 0.01 ether}();
+
+        console.log(address(hybridAccount));
         // deploy your own contract
         presiSimToken = new PresiSimToken(address(hybridAccount));
 

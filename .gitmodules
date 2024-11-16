@@ -8,3 +8,6 @@
 [submodule "boba"]
 	path = boba
 	url = https://github.com/bobanetwork/boba.git
+[submodule "contracts/lib/forge-std"]
+	path = contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

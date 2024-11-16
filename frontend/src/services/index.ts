@@ -1,9 +1,9 @@
-import {BrowserProvider, Contract} from "ethers";
+import {Contract, JsonRpcProvider} from "ethers";
 import {PRESI_SIM_TOKEN_CONTRACT} from "@/config/snap";
 import PresiSimTokenAbi from "../abi/PresiSimToken.json"
 
 export const tokenContract = async () => {
-  const provider = new BrowserProvider(window.ethereum, 'any')
+  const provider = new JsonRpcProvider('https://gateway.tenderly.co/public/boba-sepolia')
   return new Contract(
       PRESI_SIM_TOKEN_CONTRACT,
       PresiSimTokenAbi as any,
@@ -25,6 +25,7 @@ export const fetchConsecutiveReward = async () => {
 }
 export const fetchTodaysQuestion = async () => {
   const contract = await tokenContract();
+  console.log(`calling... contract.getCurrentQuesiton`)
   return await contract.getCurrentQuesiton()
 }
 export const fetchTodaysGameId = async () => {
@@ -32,13 +33,10 @@ export const fetchTodaysGameId = async () => {
   return await contract.currentGameID()
 }
 export const fetchTodaysQuestionPlayed = async (address: string) => {
-  console.log('GETTING CONTRACT')
   const contract = await tokenContract();
-  console.log('got the contract here!', contract)
   const gameId = await fetchTodaysGameId();
-  console.log('gameId is', gameId)
   const hasPlayed = await contract.hasPlayed(gameId, address)
-  console.log('hi there, has played? ', hasPlayed)
+  console.log(`gameId ${gameId}, has played: `, hasPlayed)
   return hasPlayed;
 }
 export const fetchQuestionAnswer = async (address: string) => {

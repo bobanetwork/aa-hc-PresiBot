@@ -9,7 +9,6 @@ import { useToast } from './ui/use-toast'
 
 const AdminView = () => {
   const [loading, setLoading] = useState<boolean>(false)
-  const [gameOver] = useState<boolean>(false)
   const [state] = useContext(MetaMaskContext)
 
   const { toast } = useToast();
@@ -150,7 +149,7 @@ const AdminView = () => {
       </CardHeader>
       <CardContent className="flex w-10/12 gap-2 mx-auto">
         <Button
-          disabled={!gameOver || loading}
+          disabled={loading}
           onClick={onNewGame} className="w-full" variant="outline">New Game</Button>
         <Button
           disabled={loading}
