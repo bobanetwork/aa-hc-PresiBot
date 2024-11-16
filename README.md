@@ -5,7 +5,7 @@
 > https://boba-blockchain-busters-frontend.onrender.com/
 
 > Boba Sepolia Backend \
-> https://boba-blockchain-busters-backend.onrender.com/
+> https://boba-blockchain-busters.onrender.com
 
 ## Introduction
 Welcome to the developer documentation for implementing a basic example with our system and API. This guide will walk you through the necessary steps to get started and provide you with the information you need to successfully integrate our system into your project.
@@ -363,3 +363,8 @@ forge create contracts/test/TestKyc.sol:TestKyc  --private-key="YOUR_PRIVATE_KEY
 ```
 In this example, the `TestKyc.sol` contract takes in an **address** in the constructor.
 For more options on `forge create` please refer to this [guide](https://book.getfoundry.sh/reference/forge/forge-create).
+
+### Developer Notes Sepolia Deployment
+1. Install Dependencies
+2. Deploy on Sepolia with `pnpm deploy:local`
+3. Get the `HybridAccount` and the `Backend URL` and call `RegisterURL (Boba Team)`

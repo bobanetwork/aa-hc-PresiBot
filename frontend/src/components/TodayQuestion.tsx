@@ -55,14 +55,8 @@ const TodayQuestion = ({
 
           console.log('fetching today"s question...', state.selectedAcount?.address)
           const gamePlayed = await fetchTodaysQuestionPlayed(state.selectedAcount?.address)
-          console.log('gameplayed? ', gamePlayed)
-
           const dailyReward = await fetchDailyReward();
-          console.log('daily reward?', dailyReward)
-
           const todaysQuestion = await fetchTodaysQuestion();
-          console.log('todays questions?', todaysQuestion);
-
           const wonBy = await fetchWinner()
           console.log('winnedBy', wonBy);
 
@@ -170,6 +164,7 @@ const TodayQuestion = ({
             : <p className="text-lg font-bold text-green-600">Winner of the Todays question {truncateEthAddress(winner)}!</p>
           : <CardDescription className="text-sm italic">Test your Presidential skills and win <b>{gameReward} Tokens</b></CardDescription>
         }
+
       </CardHeader>
       <CardContent className="flex flex-col w-11/12 gap-2 mx-auto">
         <CardDescription className={`text-lg text-black ${winner && 'font-light text-teal-900 italic'}`}>{question}</CardDescription>

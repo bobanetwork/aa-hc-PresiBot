@@ -65,10 +65,6 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
     except Exception as e:
         print("DECODE FAILED", e)
 
-    print("Returning response...", resp)
-    print("Error", err_code)
-    print("resp")
-
     return sdk.gen_response(req, err_code, resp)
 
 

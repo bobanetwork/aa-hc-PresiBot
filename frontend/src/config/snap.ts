@@ -5,7 +5,7 @@ import 'dotenv'
  */
 
 // export const defaultSnapOrigin = 'npm:@bobanetwork/snap-account-abstraction-keyring-hc'
-export const defaultSnapOrigin = 'local:http://localhost:8080'
+export const defaultSnapOrigin = import.meta.env.VITE_SNAP_ORIGIN;
 
 /**
  * Version of snap installed so have to give release on each new version.
@@ -24,5 +24,7 @@ export const PRESI_SIM_TOKEN_CONTRACT = import.meta.env.VITE_SMART_CONTRACT;
 export const ADMIN_USER_ADDRESSES = [
     '0xa83c16Ab5C05a457aDc0fB301C1733f35D2bf579', // Salt: 1986
     '0xC12ba894dBcE0992930a79b134CDDbe69106fe04', // Salt: 1987
-    '0xa83c16Ab5C05a457aDc0fB301C1733f35D2bf579'  // Salt: 1988
+    '0xa83c16Ab5C05a457aDc0fB301C1733f35D2bf579',  // Salt: 1988
+    '0x054718bF349cc95DF536E6645a664Fb3c8F224aE',
+    '0x49348066e93B79C86A795E3b024451272687b5ec'
     ]
