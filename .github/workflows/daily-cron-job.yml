@@ -1,9 +1,11 @@
 name: Daily Python Script
 
 on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs at midnight UTC every day
   push:
     branches:
-      - wsdt/cron-job
+      - main
   workflow_dispatch:
 
 
