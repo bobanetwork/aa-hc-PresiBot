@@ -3,11 +3,6 @@ name: Daily Python Script
 on:
   schedule:
     - cron: '0 0 * * *'  # Runs at midnight UTC every day
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
 
 jobs:
   run-script:
