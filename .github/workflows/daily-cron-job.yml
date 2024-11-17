@@ -3,15 +3,8 @@ name: Daily Python Script
 on:
   push:
     branches:
-      - cron-job  # or master, depending on your default branch
-  workflow_dispatch:  # Keeps manual trigger option
-
-# once working, run once a day
-#on:
-#  schedule:
-#    # Runs at 00:00 UTC every day
-#    - cron: '0 0 * * *'
-#  workflow_dispatch:  # also allow manual trigger of the workflow
+      - wsdt/cron-job
+  workflow_dispatch:
 
 jobs:
   run-script:
@@ -27,12 +20,14 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
+        working-directory: backend
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
 
       - name: Run script
-        run: python your_script.py
+        working-directory: backend/auto-submit
+        run: python run-all.py
         env:
           OC_HYBRID_ACCOUNT: "0x4CEDc51820f738c97b2B338d5a6f4D8100d3b122"
           ENTRY_POINTS: "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789"
