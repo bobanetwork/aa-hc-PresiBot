@@ -129,19 +129,11 @@ def submit_answer(web3, contract, private_key, answer):
         nonce = web3.eth.get_transaction_count(account.address)
         time.sleep(2)
 
-        try:
-            # Estimate gas
-            gas_estimate = contract.functions.submitByPlayer(answer).estimate_gas({
-                'from': account.address,
-                'nonce': nonce
-            })
-        except Exception as gas_err:
-            error_str = str(gas_err)
-            if "already played today" in error_str.lower():
-                print(f"Address {account.address} has already played today. Skipping...")
-                return False
-            print(f"Gas estimation failed: {error_str}")
-            gas_estimate = 300000  # Safe default
+        # Estimate gas
+        gas_estimate = contract.functions.submitByPlayer(answer).estimate_gas({
+            'from': account.address,
+            'nonce': nonce
+        })
 
         # Add 50% buffer to gas estimate
         gas_limit = int(gas_estimate * 1.5)
