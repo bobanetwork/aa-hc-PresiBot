@@ -11,7 +11,7 @@ on:
 #  schedule:
 #    # Runs at 00:00 UTC every day
 #    - cron: '0 0 * * *'
-#  workflow_dispatch:  # Allows manual trigger of the workflow
+#  workflow_dispatch:  # also allow manual trigger of the workflow
 
 jobs:
   run-script:
