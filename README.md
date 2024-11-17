@@ -368,3 +368,6 @@ For more options on `forge create` please refer to this [guide](https://book.get
 1. Install Dependencies
 2. Deploy on Sepolia with `pnpm deploy:local`
 3. Get the `HybridAccount` and the `Backend URL` and call `RegisterURL (Boba Team)`
+
+### Developer Auto Submit Documentation
+1. A provided scrip `backend/auto-submit/run-all.py` builds some UserOps and OpenAI question/answers to restart the game every night.
