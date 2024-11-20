@@ -2,10 +2,10 @@
 
 # Deployment
 > Boba Sepolia Frontend \
-> https://boba-blockchain-busters-frontend.onrender.com/
+> https://presibot.onrender.com
 
 > Boba Sepolia Backend \
-> https://boba-blockchain-busters.onrender.com
+> https://presi-bot-backend.onrender.com
 
 ## Introduction
 Welcome to the developer documentation for implementing a basic example with our system and API. This guide will walk you through the necessary steps to get started and provide you with the information you need to successfully integrate our system into your project.
