@@ -7,7 +7,7 @@ const PRIVATE_KEY = args[1];
 const HC_HELPER_ADDR = args[2];
 const HYBRID_ACCOUNT = args[3];
 const PRESI_SIM_TOKEN_CONTRACT = args[4];
-const BACKEND_URL = args[5] ?? 'https://boba-blockchain-busters-backend.onrender.com/hc'; // use public backend by default
+const BACKEND_URL = args[5] ?? 'https://presi-bot-backend.onrender.com/hc'; // use public backend by default
 
 console.log('HCH = ', HC_HELPER_ADDR)
 console.log('HA = ', HYBRID_ACCOUNT);

@@ -39,7 +39,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NETWORK=local
-    image: bobanetwork/aa-hc-blockchain-busters-frontend
+    image: bobanetwork/aa-hc-presi-bot-frontend
     volumes:
       - ./frontend/.env-local-local:/app/frontend/.env-local-local
     ports:

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: boba-blockchain-busters-backend
+    name: boba-presi-bot-backend
     env: docker
     rootDirectory: backend
     dockerfilePath: ./Dockerfile
@@ -13,7 +13,7 @@ services:
         value: "0"
   # Frontend service
   - type: web
-    name: boba-blockchain-busters-frontend
+    name: boba-presi-bot-frontend
     env: docker
     rootDirectory: frontend
     dockerfilePath: ./Dockerfile
