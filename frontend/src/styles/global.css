@@ -32,6 +32,9 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
+    --orange: 0 84.2% 60.2%;
+    --orange-foreground: 210 40% 98%;
+
     --radius: 0.5rem;
   }
 
@@ -60,6 +63,9 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
+    --orange: 0 84.2% 60.2%;
+    --orange-foreground: 210 40% 98%;
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -74,4 +80,13 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.robot-position {
+  position: absolute;
+  width: 500px;
+  right: -15%;
+  bottom: 0;
+  z-index: 4;
+  color: #f16f68;
 }
