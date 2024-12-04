@@ -38,7 +38,7 @@ export const HeaderButtons = ({
   }
 
   return (
-    <div className="py-2 px-7 mx-4 rounded-2xl bg-teal-200 flex justify-between items-center gap-4">
+    <div className="py-2 px-7 mx-4 rounded-2xl bg-teal-200 flex justify-between items-center gap-4 ">
       <div className="p-1 rounded-full h-8 w-8 bg-green-600"></div>
       <div className="flex flex-col gap-1 items-start justify-start">
         {state?.selectedAcount?.address && <p className="text-sm text-blue-800">{truncateEthAddress(state?.selectedAcount?.address)}</p>}
