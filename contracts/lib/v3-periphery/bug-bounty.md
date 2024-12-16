@@ -13,7 +13,7 @@ The scope of the Program is limited to bugs that result in the loss of user fund
 
 The following are not within the scope of the Program:
 
-- Any contract located under [contracts/test](./contracts/test) or [contracts/lens](./contracts/lens).
+- Any contract located under [contracts/test](contracts/test) or [contracts/lens](contracts/lens).
 - Bugs in any third party contract or platform that interacts with Uniswap V3.
 - Vulnerabilities already reported and/or discovered in contracts built by third parties on Uniswap V3.
 - Any already-reported bugs.

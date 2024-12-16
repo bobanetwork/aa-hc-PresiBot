@@ -127,7 +127,7 @@ async function main() {
 
     try {
         console.log('Adding Credits...')
-        await addCredit(HYBRID_ACCOUNT, 100);
+        // await addCredit(HYBRID_ACCOUNT, 100);
         console.log('DONE')
     } catch (e) {
         console.log('[Ignore on testnet] failed addCredit: ', e);
