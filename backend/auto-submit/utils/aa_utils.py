@@ -138,12 +138,14 @@ class aa_rpc(aa_utils):
 
         est_params = [op, self.EP_addr]
 
-        response = requests.post(self.bundler_url, json=request("eth_estimateUserOperationGas", params=est_params))
+        response = requests.post(
+            self.bundler_url, json=request("eth_estimateUserOperationGas", params=est_params))
+        print("estimateGas response", response.json())
 
         if 'error' in response.json():
-            print(response.json())
-            raise Exception("Gas estimation failed")
-
+            print("*** eth_estimateUserOperationGas failed")
+            time.sleep(2)
+            return False, op
 
         est_result = response.json()['result']
 

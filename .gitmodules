@@ -1,7 +1,3 @@
-[submodule "contracts/lib/openzeppelin-contracts"]
-	path = contracts/lib/openzeppelin-contracts
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts
-	branch = release-v4.9
 [submodule "snap-account-abstraction-keyring"]
 	path = snap-account-abstraction-keyring
 	url = https://github.com/bobanetwork/snap-account-abstraction-keyring.git
@@ -11,3 +7,31 @@
 [submodule "contracts/lib/forge-std"]
 	path = contracts/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "contracts/lib/openzeppelin-contracts"]
+	path = contracts/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "crates/types/contracts/lib/account-abstraction-versions/v0_7"]
+	path = crates/types/contracts/lib/account-abstraction-versions/v0_7
+	url = https://github.com/eth-infinitism/account-abstraction
+	branch = releases/v0.7
+[submodule "crates/types/contracts/lib/account-abstraction-versions/v0_6"]
+	path = crates/types/contracts/lib/account-abstraction-versions/v0_6
+	url = https://github.com/eth-infinitism/account-abstraction
+	branch = releases/v0.6
+[submodule "crates/types/contracts/lib/openzeppelin-contracts-versions/v5_0"]
+	path = crates/types/contracts/lib/openzeppelin-contracts-versions/v5_0
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	branch = release-v5.0
+[submodule "crates/types/contracts/lib/openzeppelin-contracts-versions/v4_9"]
+	path = crates/types/contracts/lib/openzeppelin-contracts-versions/v4_9
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	branch = release-v4.9
+[submodule "contracts/lib/contracts/lib/v3-periphery"]
+	path = contracts/lib/contracts/lib/v3-periphery
+	url = https://github.com/Uniswap/v3-periphery.git
+[submodule "contracts/lib/contracts/lib/v3-core"]
+	path = contracts/lib/contracts/lib/v3-core
+	url = https://github.com/Uniswap/v3-core.git
+[submodule "contracts/contracts/lib/account-abstraction"]
+	path = contracts/contracts/lib/account-abstraction
+	url = https://github.com/eth-infinitism/account-abstraction.git

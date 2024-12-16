@@ -23,8 +23,8 @@ def run():
 
     if 'initCode' not in op:
         op['initCode'] = '0x'
-    if 'paymasterAndData' not in op:
-        op['paymasterAndData'] = '0x'
+#     if 'paymasterAndData' not in op:
+#         op['paymasterAndData'] = '0x'
 
     print("Operation before estimation:", op)
 
