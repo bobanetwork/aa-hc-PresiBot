@@ -15,6 +15,7 @@ import "@account-abstraction/contracts/samples/callback/TokenCallbackHandler.sol
 
 interface IHCHelper {
   function TryCallOffchain(bytes32, bytes memory) external returns (uint32, bytes memory);
+  function AddCredit(address _account, uint256 _amount) external;
 }
 
 /**

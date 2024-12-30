@@ -17,7 +17,8 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
         ver, sk, src_addr, src_nonce, oo_nonce, payload, args))
     err_code = 1
     resp = Web3.to_bytes(text="unknown error")
-    assert(ver == "0.2")
+
+#     assert(ver == "0.2")
 
     print("creating template...")
 
