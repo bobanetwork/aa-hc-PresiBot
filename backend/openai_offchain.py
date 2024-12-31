@@ -1,5 +1,6 @@
 from web3 import Web3
 from eth_abi import abi as ethabi
+import eth_account
 from langchain import OpenAI, ConversationChain
 from onchain_events import get_current_round_question, get_current_round_answers
 from hybrid_compute_sdk import HybridComputeSDK
@@ -68,6 +69,64 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
 
     return sdk.gen_response(req, err_code, resp)
 
+
+def gen_response(self, req, err_code, resp_payload):
+    resp2 = ethabi.encode(['address', 'uint256', 'uint32', 'bytes'], [req['srcAddr'], req['srcNonce'], err_code, resp_payload])
+    p_enc1 = self.selector_hex("PutResponse(bytes32,bytes)") + \
+        ethabi.encode(['bytes32', 'bytes'], [req['skey'], resp2])
+
+    p_enc2 = self.selector_hex("execute(address,uint256,bytes)") + \
+        ethabi.encode(['address', 'uint256', 'bytes'], [
+            Web3.to_checksum_address(self.HelperAddr), 0, p_enc1])
+
+    limits = {
+        'verificationGasLimit': "0x10000",
+        'preVerificationGas': "0x10000",
+    }
+
+    call_gas = 705*len(resp_payload) + 170000
+
+    print("call_gas calculation", len(resp_payload), 4+len(p_enc2), call_gas)
+    account_gas_limits = \
+        ethabi.encode(['uint128'],[Web3.to_int(hexstr=limits['verificationGasLimit'])])[16:32] + \
+        ethabi.encode(['uint128'],[call_gas])[16:32]
+
+    gas_fees = Web3.to_bytes(
+        hexstr="0x0000000000000000000000000000000000000000000000000000000000000000"
+    )
+
+    packed = ethabi.encode([
+        'address',
+        'uint256',
+        'bytes32',
+        'bytes32',
+        'bytes32',
+        'uint256',
+        'bytes32',
+#         'bytes32',
+    ], [
+        self.HybridAcctAddr,
+        req['opNonce'],
+        Web3.keccak(Web3.to_bytes(hexstr='0x')),  # initCode
+        Web3.keccak(p_enc2),
+        account_gas_limits,
+        Web3.to_int(hexstr=limits['preVerificationGas']),
+        gas_fees,
+#         Web3.keccak(Web3.to_bytes(hexstr='0x')), # paymasterAndData
+    ])
+    oo_hash = Web3.keccak(ethabi.encode(['bytes32', 'address', 'uint256'], [
+                         Web3.keccak(packed), self.EntryPointAddr, self.HC_CHAIN]))
+    signer_acct = eth_account.account.Account.from_key(self.hc1_key)
+    e_msg = eth_account.messages.encode_defunct(oo_hash)
+    sig = signer_acct.sign_message(e_msg)
+
+    success = (err_code == 0)
+
+    return ({
+        "success": success,
+        "response": Web3.to_hex(resp_payload),
+        "signature": Web3.to_hex(sig.signature)
+    })
 
 def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
     print("OpenAI select_best_answer")

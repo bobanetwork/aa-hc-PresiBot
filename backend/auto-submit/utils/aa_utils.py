@@ -150,6 +150,7 @@ class aa_rpc(aa_utils):
         if 'paymasterAndData' in est_op:
             del est_op['paymasterAndData']
 
+        print(est_op)
         est_params = [est_op, self.EP_addr]
 
         response = requests.post(

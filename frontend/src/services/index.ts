@@ -3,6 +3,7 @@ import {PRESI_SIM_TOKEN_CONTRACT} from "@/config/snap";
 import PresiSimTokenAbi from "../abi/PresiSimToken.json"
 
 export const tokenContract = async () => {
+  console.log(`Using contract: ${PRESI_SIM_TOKEN_CONTRACT}`)
   const provider = new BrowserProvider(window.ethereum, 'any')
   return new Contract(
       PRESI_SIM_TOKEN_CONTRACT,

@@ -53,7 +53,6 @@ const TodayQuestion = ({
         if (state.selectedAcount) {
           setLoading(true);
 
-          console.log('fetching today"s question...', state.selectedAcount?.address)
           const gamePlayed = await fetchTodaysQuestionPlayed(state.selectedAcount?.address)
           const dailyReward = await fetchDailyReward();
           const todaysQuestion = await fetchTodaysQuestion();

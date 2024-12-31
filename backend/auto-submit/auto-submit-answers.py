@@ -174,6 +174,7 @@ def main():
             abi=CONTRACT_ABI
         )
 
+        print("Fetching current question...")
         # Get current question
         question = contract.functions.getCurrentQuesiton().call()
         print(f"\nCurrent question from contract: {question}")
