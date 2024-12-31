@@ -22,7 +22,7 @@ def run():
 
     # Set v0.7 specific fields and gas limits
     op['initCode'] = '0x'
-    op['paymasterAndData'] = '0x'
+#     op['paymasterAndData'] = '0x'
     op['callGasLimit'] = Web3.to_hex(200000)
     op['verificationGasLimit'] = Web3.to_hex(500000)
     op['preVerificationGas'] = Web3.to_hex(100000)
