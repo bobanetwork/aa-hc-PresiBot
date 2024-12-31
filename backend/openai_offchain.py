@@ -71,20 +71,24 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
 
 
 def gen_response(self, req, err_code, resp_payload):
+    print("gen_response called")
     resp2 = ethabi.encode(['address', 'uint256', 'uint32', 'bytes'], [req['srcAddr'], req['srcNonce'], err_code, resp_payload])
+    print(resp2)
     p_enc1 = self.selector_hex("PutResponse(bytes32,bytes)") + \
         ethabi.encode(['bytes32', 'bytes'], [req['skey'], resp2])
-
+    print(p_enc1)
     p_enc2 = self.selector_hex("execute(address,uint256,bytes)") + \
         ethabi.encode(['address', 'uint256', 'bytes'], [
             Web3.to_checksum_address(self.HelperAddr), 0, p_enc1])
-
+    print(p_enc2)
     limits = {
         'verificationGasLimit': "0x10000",
         'preVerificationGas': "0x10000",
     }
 
     call_gas = 705*len(resp_payload) + 170000
+
+    print(limits)
 
     print("call_gas calculation", len(resp_payload), 4+len(p_enc2), call_gas)
     account_gas_limits = \
@@ -121,6 +125,8 @@ def gen_response(self, req, err_code, resp_payload):
     sig = signer_acct.sign_message(e_msg)
 
     success = (err_code == 0)
+
+    print(success)
 
     return ({
         "success": success,
