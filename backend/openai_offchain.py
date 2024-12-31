@@ -72,7 +72,7 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
     print("Finishing with gen_response...")
     return gen_response(req, err_code, resp)
 
-def gen_response(self, req, err_code, resp_payload):
+def gen_response(req, err_code, resp_payload):
     print("gen_response called")
     resp2 = ethabi.encode(['address', 'uint256', 'uint32', 'bytes'], [req['srcAddr'], req['srcNonce'], err_code, resp_payload])
     print(resp2)
