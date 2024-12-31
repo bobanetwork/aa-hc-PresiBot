@@ -19,7 +19,7 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
     err_code = 1
     resp = Web3.to_bytes(text="unknown error")
 
-#     assert(ver == "0.2")
+#     assert(ver == "0.2") todo check if this is done somewhere else
 
     print("creating template...")
 
@@ -49,7 +49,7 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
         print("Daily question already generated", daily_question[current_question])
         resp = ethabi.encode(["string"], [daily_question[current_question]])
         err_code = 0
-        return sdk.gen_response(req, err_code, resp)
+        return gen_response(req, err_code, resp)
 
       # Prepare the prompt
       prompt = prompt_template
@@ -61,14 +61,16 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
       response = conversation.run(input=prompt)
       print("Open AI daily question:", response)
       daily_question[current_question] = response
-
+      print("Preparing response")
       resp = ethabi.encode(["string"], [response])
+      print("setting resp to: ", resp)
       err_code = 0
+      print("Err: ", err_code)
     except Exception as e:
         print("DECODE FAILED", e)
 
+    print("Finishing with gen_response...")
     return gen_response(req, err_code, resp)
-
 
 def gen_response(self, req, err_code, resp_payload):
     print("gen_response called")
