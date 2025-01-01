@@ -8,11 +8,7 @@ from web3 import Web3
 from eth_abi import abi as ethabi
 import eth_account
 
-"""
---- Outsource into shared usage or bundle within SDK
-"""
-
-# Provides some AA helper functions
+§# Provides some AA helper functions
 class aa_utils:
     def __init__(self, _EP_addr, _chain_id):
         self.EP_addr = _EP_addr
@@ -40,55 +36,43 @@ class aa_utils:
         return op
 
     def sign_v7_op(self, user_op, signer_key):
-        """Signs a v0.7 UserOperation, returning a modified op containing a 'signature' field."""
-        op = dict(user_op)  # Create copy since we'll modify it
+        """Signs a UserOperation, returning a modified op containing a 'signature' field."""
+        op = dict(user_op) # Derived fields are added to 'op' prior to hashing
 
-        if 'initCode' not in op:
-            op['initCode'] = '0x'
+        assert 'paymaster' not in op # not yet implemented
+
+        # The deploy-local script supplies the packed values prior to signature, as it bypasses the bundler.
+        # For normal UserOperations the fields are derived here
+        if 'accountGasLimits' not in op:
+            account_gas_limits  = ethabi.encode(['uint128'],[Web3.to_int(hexstr=op['verificationGasLimit'])])[16:32] \
+                + ethabi.encode(['uint128'],[Web3.to_int(hexstr=op['callGasLimit'])])[16:32]
+        else:
+            account_gas_limits = Web3.to_bytes(hexstr=op['accountGasLimits'])
+
+        if 'gasFees' not in op:
+            gas_fees = ethabi.encode(['uint128'],[Web3.to_int(hexstr=op['maxPriorityFeePerGas'])])[16:32] \
+                + ethabi.encode(['uint128'],[Web3.to_int(hexstr=op['maxFeePerGas'])])[16:32]
+        else:
+            gas_fees = Web3.to_bytes(hexstr=op['gasFees'])
 
         if 'paymasterAndData' not in op:
-            op['paymasterAndData'] = '0x'
+            op['paymasterAndData'] = "0x"
 
-        # Pack verification and call gas limits into a single bytes32
-        account_gas_limits = (
-            ethabi.encode(['uint128'], [Web3.to_int(hexstr=op['verificationGasLimit'])])[16:32] +
-            ethabi.encode(['uint128'], [Web3.to_int(hexstr=op['callGasLimit'])])[16:32]
-        )
-
-        # Pack max priority fee and max fee into a single bytes32
-        gas_fees = (
-            ethabi.encode(['uint128'], [Web3.to_int(hexstr=op['maxPriorityFeePerGas'])])[16:32] +
-            ethabi.encode(['uint128'], [Web3.to_int(hexstr=op['maxFeePerGas'])])[16:32]
-        )
-
-        # Pack the message according to EIP-4337 v0.7 specification
-        pack1 = ethabi.encode(
-            ['address', 'uint256', 'bytes32', 'bytes32', 'bytes32', 'uint256', 'bytes32', 'bytes32'],
-            [
-                op['sender'],
-                Web3.to_int(hexstr=op['nonce']),
-                Web3.keccak(hexstr=op['initCode']),
-                Web3.keccak(hexstr=op['callData']),
-                Web3.to_bytes(hexstr=Web3.to_hex(account_gas_limits)),
-                Web3.to_int(hexstr=op['preVerificationGas']),
-                Web3.to_bytes(hexstr=Web3.to_hex(gas_fees)),
-                Web3.keccak(hexstr=op['paymasterAndData'])
-            ]
-        )
-
-        # Create the final message hash including EntryPoint and chainId
-        pack2 = ethabi.encode(
-            ['bytes32', 'address', 'uint256'],
-            [Web3.keccak(pack1), self.EP_addr, self.chain_id]
-        )
-
-        # Sign the message
+        pack1 = ethabi.encode(['address','uint256','bytes32','bytes32','bytes32','uint256','bytes32','bytes32'], \
+              [op['sender'],
+              Web3.to_int(hexstr=op['nonce']),
+              Web3.keccak(hexstr="0x"), # initcode
+              Web3.keccak(hexstr=op['callData']),
+              account_gas_limits,
+              Web3.to_int(hexstr=op['preVerificationGas']),
+              gas_fees,
+              Web3.keccak(hexstr=op['paymasterAndData']),
+              ])
+        pack2 = ethabi.encode(['bytes32','address','uint256'], [Web3.keccak(pack1), self.EP_addr, self.chain_id])
         e_msg = eth_account.messages.encode_defunct(Web3.keccak(pack2))
         signer_acct = eth_account.account.Account.from_key(signer_key)
         sig = signer_acct.sign_message(e_msg)
-
         user_op['signature'] = Web3.to_hex(sig.signature)
-
         return user_op
 
 class aa_rpc(aa_utils):
@@ -125,11 +109,14 @@ class aa_rpc(aa_utils):
         op = {
            'sender': sender,
            'nonce': self.aa_nonce(sender,nonce_key),
-           'initCode': "0x",  # Add explicit initCode
+           #factory - none
+           #factoryData - none
            'callData': Web3.to_hex(ex_calldata),
-           'callGasLimit': Web3.to_hex(100000),  # Start with reasonable default
-           'verificationGasLimit': Web3.to_hex(100000),  # Start with reasonable default
-           'preVerificationGas': Web3.to_hex(21000),  # Base cost
+           'callGasLimit': "0x0",
+           'verificationGasLimit': Web3.to_hex(0),
+           'preVerificationGas': "0x0",
+           'maxFeePerGas': Web3.to_hex(fee),
+           'maxPriorityFeePerGas': Web3.to_hex(tip),
            #paymaster - none
            #paymasterVerificationGasLimit - none
            #paymasterPostOpGasLimit - none
@@ -141,22 +128,14 @@ class aa_rpc(aa_utils):
         return op
 
     def estimate_op_gas(self, op, extra_pvg=0, extra_vg=0, extra_cg=0):
-        """Wrapper to call eth_estimateUserOperationGas() and update the op with v0.7 specific calculations.
-           Allows limits to be increased in cases where a bundler is providing insufficient estimates.
-           Returns success flag + new op"""
+        """ Wrapper to call eth_estimateUserOperationGas() and update the op.
+            Allows limits to be increased in cases where a bundler is
+            providing insufficient estimates. Returns success flag + new op"""
 
-        # For EP v0.7 the paymasterAndData field should not be included in the RPC request
-        est_op = dict(op)
-        if 'paymasterAndData' in est_op:
-            del est_op['paymasterAndData']
-
-        print(est_op)
-        est_params = [est_op, self.EP_addr]
+        est_params = [op, self.EP_addr]
 
         response = requests.post(
-            self.bundler_url,
-            json=request("eth_estimateUserOperationGas", params=est_params)
-        )
+            self.bundler_url, json=request("eth_estimateUserOperationGas", params=est_params))
         print("estimateGas response", response.json())
 
         if 'error' in response.json():
@@ -166,57 +145,12 @@ class aa_rpc(aa_utils):
 
         est_result = response.json()['result']
 
-        # Calculate verification gas limit with v0.7 specific overheads
-        verification_gas = Web3.to_int(hexstr=est_result['verificationGasLimit'])
-
-        # Add factory deployment overhead if initCode is present
-        if op.get('initCode') and op['initCode'] != '0x':
-            verification_gas += 200000  # Factory deployment overhead
-
-            # Add init gas calculation
-            init_code = op['initCode']
-            init_code_addr = init_code[:42]  # First 20 bytes (address) as hex
-            init_code_data = '0x' + init_code[42:]  # Rest is the calldata
-
-            try:
-                init_gas = self.w3.eth.estimate_gas({
-                    'to': init_code_addr,
-                    'data': init_code_data
-                })
-                verification_gas += init_gas
-            except Exception as e:
-                print("Warning: Failed to estimate init code gas", e)
-
-        # Add EP 0.7's inner gas overhead
-        verification_gas += 10000  # ENTRY_POINT_INNER_GAS_OVERHEAD
-
-        # Calculate pre-verification gas with v0.7 specific overhead
-        pre_verification_gas = Web3.to_int(hexstr=est_result['preVerificationGas'])
-
-        # Add init code overhead to pre-verification gas
-        if op.get('initCode') and op['initCode'] != '0x':
-            init_code_len = (len(op['initCode']) - 2) // 2  # Convert hex string to bytes
-            pre_verification_gas += init_code_len * 16  # 16 gas per byte for init code
-
-        # Additional overhead for Sepolia network
-        if self.chain_id == 11155111:  # Sepolia chain ID
-            pre_verification_gas += 10000
-
-        # Apply any extra gas parameters
-        pre_verification_gas = pre_verification_gas + extra_pvg
-        verification_gas = verification_gas + extra_vg
-        call_gas = Web3.to_int(hexstr=est_result['callGasLimit']) + extra_cg
-
-        # Update the operation with calculated values
-        op['preVerificationGas'] = Web3.to_hex(pre_verification_gas)
-        op['verificationGasLimit'] = Web3.to_hex(verification_gas)
-        op['callGasLimit'] = Web3.to_hex(call_gas)
-
-        print("Final gas values:")
-        print(f"preVerificationGas: {op['preVerificationGas']}")
-        print(f"verificationGasLimit: {op['verificationGasLimit']}")
-        print(f"callGasLimit: {op['callGasLimit']}")
-
+        op['preVerificationGas'] = Web3.to_hex(Web3.to_int(
+            hexstr=est_result['preVerificationGas']) + extra_pvg)
+        op['verificationGasLimit'] = Web3.to_hex(Web3.to_int(
+            hexstr=est_result['verificationGasLimit']) + extra_vg)
+        op['callGasLimit'] = Web3.to_hex(Web3.to_int(
+            hexstr=est_result['callGasLimit']) + extra_cg)
         return True, op
 
     def sign_submit_op(self, op, owner_key):
@@ -240,6 +174,10 @@ class aa_rpc(aa_utils):
                 break
             if 'error' in response.json():
                 emsg = response.json()['error']['message']
+                if emsg == "replacement underpriced":
+                    print("*** Retrying with increased maxPriorityFeePerGas")
+                    op['maxPriorityFeePerGas'] += 1
+                    time.sleep(5)
                 # Workaround for sending debug_traceCall to unsynced node
                 if not re.search(r'message: block 0x.{64} not found', emsg):
                     break
@@ -254,7 +192,7 @@ class aa_rpc(aa_utils):
         op_hash = {}
         op_hash['hash'] = response.json()['result']
         timeout = True
-        for _ in range(100):
+        for _ in range(500):
             print("Waiting for receipt...")
             time.sleep(10)
             op_receipt = requests.post(self.bundler_url, json=request(
