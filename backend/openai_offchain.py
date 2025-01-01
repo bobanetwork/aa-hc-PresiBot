@@ -70,9 +70,13 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
         print("DECODE FAILED", e)
 
     print("Finishing with gen_response...")
-    response = sdk.gen_response(req, err_code, resp)
-    print("Final generated response")
-    return response
+    try:
+        print("Generating final response...")
+        response = sdk.gen_response(req, err_code, resp)
+        print("Final generated response")
+        return response
+    except Exception as e:
+        print("Error generating response:", e)
 
 def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
     print("OpenAI select_best_answer")

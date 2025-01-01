@@ -8,7 +8,7 @@ from web3 import Web3
 from eth_abi import abi as ethabi
 import eth_account
 
-§# Provides some AA helper functions
+# Provides some AA helper functions
 class aa_utils:
     def __init__(self, _EP_addr, _chain_id):
         self.EP_addr = _EP_addr
