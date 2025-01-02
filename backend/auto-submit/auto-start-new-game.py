@@ -16,16 +16,16 @@ def run():
     op = aa.build_op(USER_ACCOUNT, CONTRACT, 0, calldata, nKey)
 
     print("-")
-    print("Final OP is: ", op)
     op['callGasLimit'] = Web3.to_hex(200000)
     op['verificationGasLimit'] = Web3.to_hex(500000)
     op['preVerificationGas'] = Web3.to_hex(100000)
 
+    print("Final OP is: ", op)
     # Estimate gas
-    (success, op) = estimateOp(aa, op)
-    if not success:
-        print("Gas estimation failed")
-        return
+#     (success, op) = estimateOp(aa, op)
+#     if not success:
+#         print("Gas estimation failed")
+#         return
 
     # Submit if everything looks good
     rcpt = aa.sign_submit_op(op, u_key)

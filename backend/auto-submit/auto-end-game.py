@@ -10,7 +10,7 @@ def run():
     USER_ACCOUNT = Web3.to_checksum_address(os.environ['CLIENT_ADDR'])
 
     print(f"CONTRACT: {CONTRACT}")
-    print(f"ENTRY_POINT:: {CONTRACT}")
+    print(f"ENTRY_POINT:: {ENTRY_POINT}")
     print(f"USER ACCOUNT: {USER_ACCOUNT}")
 
     # The user account

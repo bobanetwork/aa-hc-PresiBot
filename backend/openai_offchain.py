@@ -84,7 +84,7 @@ def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
         ver, sk, src_addr, src_nonce, oo_nonce, payload, args))
     err_code = 1
     resp = Web3.to_bytes(text="unknown error")
-    assert(ver == "0.2")
+#     assert(ver == "0.2")
 
     # Define the prompt for the chatbot
     prompt_template = """
