@@ -56,7 +56,7 @@ contract DeployExample is Script {
         // Register URL - done by the boba team
         // Important, add credits to the right contc!
         IERC20(0x4200000000000000000000000000000000000023).approve(address(hcHelper), 30000000000000000);
-        hcHelper.AddCredit(address(hybridAccount), 3);
+        hcHelper.AddCredit(address(hybridAccount), 5);
         // hcHelper.RegisterUrl(address(hybridAccount), backendURL);
 
         // Permit caller

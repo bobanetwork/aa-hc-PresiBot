@@ -2,7 +2,7 @@ from eth_abi import abi as ethabi
 from utils.userop_utils import *
 
 def run():
-    print("getDailyQuestion()")
+    print("Start New Game - getDailyQuestion()")
 
     # Contract setup
     ENTRY_POINT = Web3.to_checksum_address(os.environ['ENTRY_POINTS'])
@@ -15,20 +15,14 @@ def run():
     calldata = selector("getDailyQuestion()")
     op = aa.build_op(USER_ACCOUNT, CONTRACT, 0, calldata, nKey)
 
-    print("-")
-    op['callGasLimit'] = Web3.to_hex(200000)
-    op['verificationGasLimit'] = Web3.to_hex(500000)
-    op['preVerificationGas'] = Web3.to_hex(100000)
-
-    print("Final OP is: ", op)
     # Estimate gas
-#     (success, op) = estimateOp(aa, op)
-#     if not success:
-#         print("Gas estimation failed")
-#         return
+    (success, op) = estimateOp(aa, op)
+    if not success:
+        print("𐄂 Gas estimation failed")
+        return
 
     # Submit if everything looks good
     rcpt = aa.sign_submit_op(op, u_key)
     ParseReceipt(rcpt)
-
+    print("✓ Successfully re-started new PresiBot Game")
 run()
