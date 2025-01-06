@@ -10,17 +10,23 @@ import {
 
 dotenv.config();
 
-const DEFAULT_BOBA_SEPOLIA = {
-    RPC_URL: 'https://sepolia.boba.network',
-    HC_HELPER_ADDR: '0x1c64EC0A5E2C58295c3208a63209A2A719dF68D8',
-    ENTRYPOINT_ADDR: '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
-}
-
 async function main() {
     try {
-        const {HC_HELPER_ADDR, RPC_URL, ENTRYPOINT_ADDR} = DEFAULT_BOBA_SEPOLIA
+        const {
+            HC_HELPER_ADDR,
+            ENTRY_POINT
+        } = process.env
 
-        console.log("Using RPC = ", RPC_URL)
+        if (!ENTRY_POINT || !HC_HELPER_ADDR) {
+            throw Error("Invalid Configuration: Missing either ENTRY_POINT or HC_HELPER_ADDR")
+        }
+
+        const RPC_URL = 'https://sepolia.boba.network';
+
+        console.log(`Using RPC = ${RPC_URL}`,)
+        console.log(`Using HC HELPER ADDR = ${HC_HELPER_ADDR}`)
+        console.log(`Using EP = ${ENTRY_POINT}`)
+
         // Step 1: Compile Hardhat project
         console.log("Compiling Hardhat project...");
         await execPromise("npx hardhat compile");
@@ -71,7 +77,7 @@ async function main() {
 
         const finalBackendUrl = BACKEND_URL ?? "https://boba-blockchain-busters.onrender.com/hc"
         updateEnvVariable("BACKEND_URL", finalBackendUrl)
-        updateEnvVariable("ENTRY_POINT", ENTRYPOINT_ADDR)
+        updateEnvVariable("ENTRY_POINT", ENTRY_POINT)
 
         if (!BACKEND_URL) {
             console.warn('BACKEND_URL not defined. Using default public endpoint https://boba-blockchain-busters.onrender.com/hc')
@@ -116,7 +122,7 @@ async function main() {
 
         updateEnvVariable(
             "ENTRY_POINTS",
-            ENTRYPOINT_ADDR, // @dev Official Boba Sepolia Entrypoint: https://docs.boba.network/developer/features/aa-basics/contract-addresses
+            ENTRY_POINT, // @dev Official Boba Sepolia Entrypoint: https://docs.boba.network/developer/features/aa-basics/contract-addresses
             backendEnvPath
         );
         updateEnvVariable("CHAIN_ID", "2882", backendEnvPath);

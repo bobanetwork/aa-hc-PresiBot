@@ -8,10 +8,6 @@ from web3 import Web3
 from eth_abi import abi as ethabi
 import eth_account
 
-"""
---- Outsource into shared usage or bundle within SDK
-"""
-
 # Provides some AA helper functions
 class aa_utils:
     def __init__(self, _EP_addr, _chain_id):
@@ -100,11 +96,8 @@ class aa_rpc(aa_utils):
         # the required L2 gas can exceed the block gas limit.
         tip = max(self.w3.eth.max_priority_fee, Web3.to_wei(0.5, 'gwei'))
         base_fee = self.w3.eth.gas_price - self.w3.eth.max_priority_fee
-        print("tip", tip, "base_fee", base_fee)
         assert base_fee > 0
         fee = max(self.w3.eth.gas_price, 2 * base_fee + tip)
-        print("Using gas prices", fee, tip, "detected",
-              self.w3.eth.gas_price, self.w3.eth.max_priority_fee)
 
         ex_calldata = selector("execute(address,uint256,bytes)") + \
             ethabi.encode(['address', 'uint256', 'bytes'],
@@ -128,7 +121,6 @@ class aa_rpc(aa_utils):
            # Dummy signature, per Alchemy AA documentation
            'signature': '0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c'
         }
-        print("Built userOperation", op)
         return op
 
     def estimate_op_gas(self, op, extra_pvg=0, extra_vg=0, extra_cg=0):
@@ -138,22 +130,27 @@ class aa_rpc(aa_utils):
 
         est_params = [op, self.EP_addr]
 
-        response = requests.post(self.bundler_url, json=request("eth_estimateUserOperationGas", params=est_params))
+        try:
+            response = requests.post(self.bundler_url, json=request("eth_estimateUserOperationGas", params=est_params))
+            print("✓ Gas Estimation Response: ", response.json())
 
-        if 'error' in response.json():
-            print(response.json())
-            raise Exception("Gas estimation failed")
+            if 'error' in response.json():
+                print("*** eth_estimateUserOperationGas failed")
+                time.sleep(2)
+                return False, op
 
+            est_result = response.json()['result']
 
-        est_result = response.json()['result']
-
-        op['preVerificationGas'] = Web3.to_hex(Web3.to_int(
-            hexstr=est_result['preVerificationGas']) + extra_pvg)
-        op['verificationGasLimit'] = Web3.to_hex(Web3.to_int(
-            hexstr=est_result['verificationGasLimit']) + extra_vg)
-        op['callGasLimit'] = Web3.to_hex(Web3.to_int(
-            hexstr=est_result['callGasLimit']) + extra_cg)
-        return True, op
+            op['preVerificationGas'] = Web3.to_hex(Web3.to_int(
+                hexstr=est_result['preVerificationGas']) + extra_pvg)
+            op['verificationGasLimit'] = Web3.to_hex(Web3.to_int(
+                hexstr=est_result['verificationGasLimit']) + extra_vg)
+            op['callGasLimit'] = Web3.to_hex(Web3.to_int(
+                hexstr=est_result['callGasLimit']) + extra_cg)
+            return True, op
+        except Exception as e:
+            print("𐄂 Error while estimating gas for operation: ", e)
+            return False, op
 
     def sign_submit_op(self, op, owner_key):
         """Sign and submit a UserOperation to the Bundler"""
@@ -176,6 +173,10 @@ class aa_rpc(aa_utils):
                 break
             if 'error' in response.json():
                 emsg = response.json()['error']['message']
+                if emsg == "replacement underpriced":
+                    print("*** Retrying with increased maxPriorityFeePerGas")
+                    op['maxPriorityFeePerGas'] += 1
+                    time.sleep(5)
                 # Workaround for sending debug_traceCall to unsynced node
                 if not re.search(r'message: block 0x.{64} not found', emsg):
                     break
@@ -190,17 +191,16 @@ class aa_rpc(aa_utils):
         op_hash = {}
         op_hash['hash'] = response.json()['result']
         timeout = True
-        for _ in range(100):
+        for _ in range(500):
             print("Waiting for receipt...")
             time.sleep(10)
             op_receipt = requests.post(self.bundler_url, json=request(
                 "eth_getUserOperationReceipt", params=op_hash))
             op_receipt = op_receipt.json()['result']
             if op_receipt is not None:
-                # print("op_receipt", op_receipt)
                 assert op_receipt['receipt']['status'] == "0x1"
-                print("operation success", op_receipt['success'],
-                      "txHash=", op_receipt['receipt']['transactionHash'])
+#                 print("operation success", op_receipt['success'], "txHash=", op_receipt['receipt']['transactionHash'])
+                print("✓ UserOperation succeeded")
                 timeout = False
                 assert op_receipt['success']
                 break

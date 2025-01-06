@@ -117,8 +117,6 @@ def submit_answer(web3, contract, private_key, answer):
     """Submit an answer to the contract with proper gas estimation"""
     try:
         account = Account.from_key(private_key)
-        print(f"\nChecking if address has already played: {account.address}")
-
         if has_already_played(web3, contract, account.address):
             print(f"Address {account.address} has already played today. Skipping...")
             return False
@@ -137,7 +135,6 @@ def submit_answer(web3, contract, private_key, answer):
 
         # Add 50% buffer to gas estimate
         gas_limit = int(gas_estimate * 1.5)
-        print(f"Estimated gas: {gas_estimate}, Using gas limit: {gas_limit}")
 
         # Build transaction with type 2 (EIP-1559) parameters
         transaction = contract.functions.submitByPlayer(answer).build_transaction({
@@ -153,11 +150,7 @@ def submit_answer(web3, contract, private_key, answer):
         signed_txn = web3.eth.account.sign_transaction(transaction, private_key)
         tx_hash = web3.eth.send_raw_transaction(signed_txn.rawTransaction)
 
-        # Wait for transaction receipt with longer timeout
-        receipt = web3.eth.wait_for_transaction_receipt(tx_hash, timeout=180)
-        print(f"Transaction successful! Hash: {receipt['transactionHash'].hex()}")
-        print(f"Gas used: {receipt['gasUsed']}")
-
+        print("Transaction successful!")
         time.sleep(5)
         return True
 
@@ -173,24 +166,16 @@ def main():
             address=Web3.to_checksum_address(CONTRACT_ADDRESS),
             abi=CONTRACT_ABI
         )
-
+        print("Fetching current question...")
         # Get current question
         question = contract.functions.getCurrentQuesiton().call()
-        print(f"\nCurrent question from contract: {question}")
-
         # Get answers from OpenAI
         print("\nGetting answers from OpenAI...")
         answers = get_langchain_answers(question)
-
         # Submit all answers
         print("\nSubmitting answers...")
         successful_submissions = 0
         for i, (answer, private_key) in enumerate(zip(answers, SUBMITTER_PKS), 1):
-            print(f"\nAnswer {i}:")
-            print("-" * 50)
-            print(answer)
-            print("-" * 50)
-
             # Submit answer to contract
             if submit_answer(web3, contract, private_key, answer):
                 print(f"Successfully submitted answer {i}")

@@ -1,15 +1,17 @@
 [profile.default]
 src = "src"
 out = "out"
-libs = ['node_modules', 'lib']
+libs = ['lib']
 test = 'test'
 cache_path  = 'cache_forge'
 remappings = [
     "forge-std/=lib/forge-std/src/",
     "eth-gas-reporter/=node_modules/eth-gas-reporter/",
-    "@openzeppelin/=node_modules/@openzeppelin/",
-    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
     "@bobanetwork/aa-hc-sdk-contracts/=node_modules/@bobanetwork/aa-hc-sdk-contracts",
-    "hardhat/=node_modules/hardhat/"
+    "hardhat/=node_modules/hardhat/",
+    "@uniswap/v3-periphery/=lib/v3-periphery/",
+    "@uniswap/v3-core/=lib/v3-core/",
+    "@account-abstraction/=lib/account-abstraction/",
+    "@account-abstraction/contracts/=lib/account-abstraction/contracts/"
 ]
-

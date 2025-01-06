@@ -4,13 +4,13 @@ pragma solidity ^0.8.25;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/samples/HybridAccount.sol";
+import "./HybridAccount.sol";
 
 /**
  * @title PresiSimToken
  * @dev ERC20 token with game logic for rewards.
  */
-contract PresiSimToken is ERC20, Ownable {
+contract PresiSimToken is ERC20, Ownable(msg.sender) {
     uint256 public dailyReward = 100 * (10 ** 18); // Daily reward, adjustable
     uint256 public referralReward = 10 * (10 ** 18); // Referral reward, adjustable
     uint256 public consecutiveReward = 5 * (10 ** 18); // 7 Days consecutive reward, adjustable
@@ -42,7 +42,7 @@ contract PresiSimToken is ERC20, Ownable {
     event RewardClaimed(address user, uint256 amount);
     event HCError(uint32 err);
 
-    constructor(address _demoAddr) ERC20("PresiSim Token", "PST") Ownable() {
+    constructor(address _demoAddr) ERC20("PresiSim Token", "PST") {
         address payable demoAddr = payable(_demoAddr);
         HA = HybridAccount(demoAddr);
     }

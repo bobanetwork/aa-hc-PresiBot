@@ -2,65 +2,94 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/samples/HybridAccount.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/core/EntryPoint.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/core/HCHelper.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/samples/HybridAccountFactory.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/samples/SimpleAccountFactory.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/samples/TokenPaymaster.sol";
-import "@bobanetwork/aa-hc-sdk-contracts/samples/VerifyingPaymaster.sol";
+import "../contracts/HybridAccount.sol";
+import "../contracts/HybridAccountFactory.sol";
+import "../contracts/HCHelper.sol";
+import "@account-abstraction/contracts/core/EntryPoint.sol";
+import "@account-abstraction/contracts/samples/SimpleAccountFactory.sol";
+import "@account-abstraction/contracts/samples/TokenPaymaster.sol";
+import "@account-abstraction/contracts/samples/VerifyingPaymaster.sol";
+import "@account-abstraction/contracts/samples/VerifyingPaymaster.sol";
 import "../contracts/PresiSimToken.sol";
 
 contract DeployExample is Script {
     // Configs
     uint256 public deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address public deployerAddress;
-    string public backendURL = vm.envString("BACKEND_URL"); // default backend for boba sepolia
-    address public hcHelperAddr = vm.envAddress("HC_HELPER_ADDR"); // System-wide HCHelper
+    string public backendURL = vm.envString("BACKEND_URL");
+    address public hcHelperAddr = vm.envAddress("HC_HELPER_ADDR");
 
     // Contracts
-    address public entrypoint = vm.envAddress("ENTRY_POINT"); // system wide
-    //  address public haFactory = address(0x3DD6EE2e539CCd7EaB881173fB704f766e877848); // System-wide Account factory, prior ?
-    address public haFactory = address(0x3DD6EE2e539CCd7EaB881173fB704f766e877848); // System-wide Account factory
+    address public entrypoint = vm.envAddress("ENTRY_POINT");
+    address public haFactory = vm.envAddress("HA_FACTORY");
 
-    // Contracts
     HybridAccount public hybridAccount;
-    HCHelper public hcHelper;
+    IHCHelper public hcHelper;
     PresiSimToken public presiSimToken;
     TokenPaymaster public tokenPaymaster;
 
     function run() public {
         deployerAddress = vm.addr(deployerPrivateKey);
-        tokenPaymaster = TokenPaymaster(address(0x8223388f7aF211d84289783ed97ffC5Fefa14256));
-        console.log(address(tokenPaymaster.entryPoint()));
-
         vm.startBroadcast(deployerPrivateKey);
 
-        hcHelper = new HCHelper(
-            entrypoint,
-            hcHelperAddr
-        );
+        // Init HCHelper
+        hcHelper = IHCHelper(vm.envAddress("HC_HELPER_ADDR"));
 
         // Deploy using HybridAccountFactory, salt = block.number to force redeploy HybridAccount if already existing from this wallet
         hybridAccount = HybridAccountFactory(haFactory).createAccount(deployerAddress, block.number);
         console.log("Account created");
         console.log(address(hybridAccount));
 
-//      fund the entrypoint to pay for operations for this hybridAccount
-        IEntryPoint(entrypoint).depositTo{value: 0.01 ether}(address(hybridAccount));
-        IEntryPoint(entrypoint).depositTo{value: 0.01 ether}(address(tokenPaymaster)); // might be redundant
-//      tokenPaymaster.deposit{value: 0.01 ether}();
+        // Fund the account if needed
+        if (address(hybridAccount).balance < 0.01 ether) {
+            payable(address(hybridAccount)).transfer(
+                0.01 ether - address(hybridAccount).balance
+            );
+        }
+        console.log("Account Funded");
+        console.log("Account Deposited");
 
-        console.log(address(hybridAccount));
-        // deploy your own contract
+        // Deploy PresiSimToken
         presiSimToken = new PresiSimToken(address(hybridAccount));
+        console.log("PresiSim Token");
 
-        // register url, add credit
-        // only owner - reach out to Boba foundation: hcHelper.RegisterUrl(address(hybridAccount), backendURL);
-        hcHelper.AddCredit(address(hybridAccount), 100);
+        // Register URL - done by the boba team
+        // Important, add credits to the right contc!
+        IERC20(0x4200000000000000000000000000000000000023).approve(address(hcHelper), 30000000000000000);
+        hcHelper.AddCredit(address(hybridAccount), 5);
+        // hcHelper.RegisterUrl(address(hybridAccount), backendURL);
+
+        // Permit caller
         hybridAccount.PermitCaller(address(presiSimToken), true);
-        // permit caller
-        hybridAccount.initialize(deployerAddress);
+        console.log("Caller permitted");
+
+        console.log("Hybrid Account Owner set to:");
+        console.log(address(deployerAddress));
+
+        // Verification logs
+        console.log("\n=== Deployment Verification ===");
+        console.log("HCHelper address:", address(hcHelper)); // that why the credits call fails?? goes to the wrong addr!
+        console.log("HybridAccount address:", address(hybridAccount));
+        console.log("PresiSimToken address:", address(presiSimToken));
+        console.log("Deployer address:", deployerAddress);
+
+        // Try to get and log the owner of HybridAccount
+        try hybridAccount.owner() returns (address owner) {
+            console.log("HybridAccount owner:", owner);
+        } catch {
+            console.log("Could not fetch HybridAccount owner");
+        }
+
+        // Verify PresiSimToken ownership
+        try presiSimToken.owner() returns (address owner) {
+            console.log("PresiSimToken owner:", owner);
+        } catch {
+            console.log("Could not fetch PresiSimToken owner");
+        }
+
+        // Check account balance
+        console.log("HybridAccount balance:", address(hybridAccount).balance);
+
         vm.stopBroadcast();
     }
 }

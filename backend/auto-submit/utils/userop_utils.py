@@ -70,8 +70,6 @@ def estimateOp(aa, p):
     gasFees['estGas'] = Web3.to_int(hexstr=p['preVerificationGas']) \
         + Web3.to_int(hexstr=p['verificationGasLimit']) \
         + Web3.to_int(hexstr=p['callGasLimit'])
-    print("estimateGas total =", gasFees['estGas'])
-    print("-----")
     return True, p
 
 # ===============================================

@@ -1,5 +1,6 @@
 from web3 import Web3
 from eth_abi import abi as ethabi
+import eth_account
 from langchain import OpenAI, ConversationChain
 from onchain_events import get_current_round_question, get_current_round_answers
 from hybrid_compute_sdk import HybridComputeSDK
@@ -17,7 +18,8 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
         ver, sk, src_addr, src_nonce, oo_nonce, payload, args))
     err_code = 1
     resp = Web3.to_bytes(text="unknown error")
-    assert(ver == "0.2")
+
+#     assert(ver == "0.2")
 
     print("creating template...")
 
@@ -59,14 +61,22 @@ def openai_create_question(ver, sk, src_addr, src_nonce, oo_nonce, payload, *arg
       response = conversation.run(input=prompt)
       print("Open AI daily question:", response)
       daily_question[current_question] = response
-
+      print("Preparing response")
       resp = ethabi.encode(["string"], [response])
+      print("setting resp to: ", resp)
       err_code = 0
+      print("Err: ", err_code)
     except Exception as e:
         print("DECODE FAILED", e)
 
-    return sdk.gen_response(req, err_code, resp)
-
+    print("Finishing with gen_response...")
+    try:
+        print("Generating final response...")
+        response = sdk.gen_response(req, err_code, resp)
+        print("Final generated response")
+        return response
+    except Exception as e:
+        print("Error generating response:", e)
 
 def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
     print("OpenAI select_best_answer")
@@ -74,7 +84,7 @@ def select_best_answer(ver, sk, src_addr, src_nonce, oo_nonce, payload, *args):
         ver, sk, src_addr, src_nonce, oo_nonce, payload, args))
     err_code = 1
     resp = Web3.to_bytes(text="unknown error")
-    assert(ver == "0.2")
+#     assert(ver == "0.2")
 
     # Define the prompt for the chatbot
     prompt_template = """
