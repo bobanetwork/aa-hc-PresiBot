@@ -1,10 +1,10 @@
-import {BrowserProvider, Contract} from "ethers";
+import {Contract, JsonRpcProvider} from "ethers";
 import {PRESI_SIM_TOKEN_CONTRACT} from "@/config/snap";
 import PresiSimTokenAbi from "../abi/PresiSimToken.json"
 
 export const tokenContract = async () => {
   console.log(`Using contract: ${PRESI_SIM_TOKEN_CONTRACT}`)
-  const provider = new BrowserProvider(window.ethereum, 'any')
+  const provider = new JsonRpcProvider('https://sepolia.boba.network', 'any')
   return new Contract(
       PRESI_SIM_TOKEN_CONTRACT,
       PresiSimTokenAbi as any,
