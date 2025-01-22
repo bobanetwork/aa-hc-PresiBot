@@ -1,3 +1,24 @@
+# Trying out the Demo
+
+1. Make sure to have [Metamask Flask](https://chromewebstore.google.com/detail/metamask-flask-developmen/ljfoeinjpaedjfecbmggjgodbgkmjkjk) installed and setup (Official Snap store listing pending, almost complete)
+2. Open the frontend of [Presibot](https://presibot.onrender.com) (hosted on a free hosting provider, might take a minute to load on cold starts)
+3. Click on "Click to create a Snap Account" to create a new Smart account if you don't have one already. 
+   ![Create smart account](./assets/click-to-create-acc.png)
+4. This should lead you to a new page - the [Wallet page](https://hc-wallet.sepolia.boba.network/) to manage your smart accounts on Boba. Install the Snap to use Hybrid Compute / Account Abstraction on Boba.
+   ![Install Snap & Connect](./assets/install-snap.png)
+5. You should see this wallet page after connecting.
+   ![Wallet page](./assets/wallet-page-connected.png)
+6. Click on "Create account (Deterministic)" and then on "Create Account" to create your first Smart Wallet.
+   ![Create deterministic account](./assets/acc-deterministic-view.png)
+7. If everything worked you should see a success message like this:
+   ![Success create smart wallet](./assets/success-create-wallet.png)
+8. This newly created account should be now visible in your Metamask and won't have any funds for gas. Send some gas from another account to it so that you can cover at least 1 transaction.
+   ![Funds transferred](./assets/funds-transferred.png)
+9. Let's head back to our [Presibot page](https://presibot.onrender.com) and reload the website. If you selected your smart wallet in Metamask and connect with it on the DApp - the error message from before should disappear.
+   ![Smart wallet connected](./assets/smart-wallet-connected.png)
+10. Click on "Today's question" to start playing. The example doesn't subsidize gas (in your own projects you can do that with Account Abstraction) - so you need to have something on your wallet.
+    ![Start playing](./assets/start-playing.png)
+
 # Developer Documentation
 
 # Deployment
@@ -6,9 +27,6 @@
 
 > Boba Sepolia Backend \
 > https://presi-bot-backend.onrender.com
-
-
-
 
 
 ## Introduction
