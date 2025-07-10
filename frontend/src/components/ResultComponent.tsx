@@ -1,6 +1,6 @@
 import { ADD_SUB_CONTRACT } from '@/config/snap'
 import { MetaMaskContext } from '@/hooks/MetamaskContext'
-import { BrowserProvider, Contract } from 'ethers'
+import { BrowserProvider, Contract, JsonRpcProvider } from 'ethers'
 import { useContext, useEffect, useState } from 'react'
 import addSubContractAbi from '../abi/testCounter.abi.json'
 import { Button } from './ui/button'
@@ -23,7 +23,17 @@ const ResultComponent = () => {
         return false
       }
 
-      const provider = new BrowserProvider(window.ethereum, 'any')
+      // Try to use the configured RPC provider first, fallback to MetaMask
+      let provider;
+      const rpcUrl = import.meta.env.VITE_RPC_PROVIDER;
+      
+      if (rpcUrl && rpcUrl !== 'undefined') {
+        console.log(`Using configured RPC: ${rpcUrl}`);
+        provider = new JsonRpcProvider(rpcUrl);
+      } else {
+        console.log('Using MetaMask provider');
+        provider = new BrowserProvider(window.ethereum, 'any');
+      }
 
       const addSubContract = new Contract(
         ADD_SUB_CONTRACT,

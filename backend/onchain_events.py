@@ -73,7 +73,7 @@ print("starting_block =", starting_block)
 rpc_url = "http://192.168.0.43:9545"
 
 if (IS_LOCAL == False):
-   rpc_url = "https://sepolia.boba.network"
+   rpc_url = "https://boba-sepolia.gateway.tenderly.co"
 
 print("RPC URL=", rpc_url)
 

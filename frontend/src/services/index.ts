@@ -1,10 +1,22 @@
-import {BrowserProvider, Contract} from "ethers";
+import {BrowserProvider, Contract, JsonRpcProvider} from "ethers";
 import {PRESI_SIM_TOKEN_CONTRACT} from "@/config/snap";
 import PresiSimTokenAbi from "../abi/PresiSimToken.json"
 
 export const tokenContract = async () => {
   console.log(`Using contract: ${PRESI_SIM_TOKEN_CONTRACT}`)
-  const provider = new BrowserProvider(window.ethereum, 'any')
+  
+  // Try to use the configured RPC provider first, fallback to MetaMask
+  let provider;
+  const rpcUrl = import.meta.env.VITE_RPC_PROVIDER;
+  
+  if (rpcUrl && rpcUrl !== 'undefined') {
+    console.log(`Using configured RPC: ${rpcUrl}`);
+    provider = new JsonRpcProvider(rpcUrl);
+  } else {
+    console.log('Using MetaMask provider');
+    provider = new BrowserProvider(window.ethereum, 'any');
+  }
+  
   return new Contract(
       PRESI_SIM_TOKEN_CONTRACT,
       PresiSimTokenAbi as any,
