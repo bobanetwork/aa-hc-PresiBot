@@ -1,5 +1,5 @@
 import type { KeyringAccount } from '@metamask/keyring-api';
-import { KeyringSnapRpcClient } from '@metamask/keyring-api';
+import {KeyringSnapRpcClient} from "@metamask/keyring-snap-client";
 import type { Dispatch, ReactNode, Reducer } from 'react';
 import { createContext, useEffect, useReducer } from 'react';
 

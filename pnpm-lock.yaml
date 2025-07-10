@@ -139,7 +139,10 @@ importers:
         version: 1.0.0(react@18.3.1)
       '@metamask/keyring-api':
         specifier: ^8.0.0
-        version: 8.1.3(@metamask/providers@17.2.1(webextension-polyfill@0.12.0))(webextension-polyfill@0.12.0)
+        version: 8.1.3(webextension-polyfill@0.12.0)
+      '@metamask/keyring-snap-client':
+        specifier: ^5.0.0
+        version: 5.0.0
       '@radix-ui/react-dialog':
         specifier: ^1.1.1
         version: 1.1.2(@types/react-dom@18.3.1)(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -600,6 +603,9 @@ packages:
   '@ethereumjs/common@3.2.0':
     resolution: {integrity: sha512-pksvzI0VyLgmuEF2FA/JR/4/y6hcPq8OUail3/AvycBaW1d5VSauOZzqGvJ3RTmR4MU35lWE8KseKOsEhrFRBA==}
 
+  '@ethereumjs/common@4.4.0':
+    resolution: {integrity: sha512-Fy5hMqF6GsE6DpYTyqdDIJPJgUtDn4dL120zKw+Pswuo+iLyBsEYuSyzMw6NVzD2vDzcBG9fE4+qX4X2bPc97w==}
+
   '@ethereumjs/rlp@4.0.1':
     resolution: {integrity: sha512-tqsQiBQDQdmPWE1xkkBq4rlSW5QZpLOUJ5RJh2/9fug+q9tnUhuZoVLk7s0scUIKTOzEtR72DFBXI4WiZcMpvw==}
     engines: {node: '>=14'}
@@ -614,9 +620,17 @@ packages:
     resolution: {integrity: sha512-1nc6VO4jtFd172BbSnTnDQVr9IYBFl1y4xPzZdtkrkKIncBCkdbgfdRV+MiTkJYAtTxvV12GRZLqBFT1PNK6Yw==}
     engines: {node: '>=14'}
 
+  '@ethereumjs/tx@5.4.0':
+    resolution: {integrity: sha512-SCHnK7m/AouZ7nyoR0MEXw1OO/tQojSbp88t8oxhwes5iZkZCtfFdUrJaiIb72qIpH2FVw6s1k1uP7LXuH7PsA==}
+    engines: {node: '>=18'}
+
   '@ethereumjs/util@8.1.0':
     resolution: {integrity: sha512-zQ0IqbdX8FZ9aw11vP+dZkKDkS+kgIvQPHnSAXzP9pLu+Rfu3D3XEeLbicvoXJTYnhZiPmsZUxgdzXwNKxRPbA==}
     engines: {node: '>=14'}
+
+  '@ethereumjs/util@9.1.0':
+    resolution: {integrity: sha512-XBEKsYqLGXLah9PNJbgdkigthkG7TAGvlD/sH12beMXEyHDyigfcbdvHhmLyDWgDyOJn4QwiQUaF7yeuhnjdog==}
+    engines: {node: '>=18'}
 
   '@ethersproject/abi@5.7.0':
     resolution: {integrity: sha512-351ktp42TiRcYB3H1OP8yajPeAQstMW/yCFokj/AthP9bLHzQFPlOrxOcwYEDkUAICmOHljvN4K39OMTMUa9RA==}
@@ -847,11 +861,25 @@ packages:
     resolution: {integrity: sha512-oznbIDlIn7bQsyf/RVhuVX9TsK+QUlTDeksUjBjTPKhGkFHAgn9duBHPE8P30VcCdWlt/oYSqfJVC5WK1/OXKw==}
     engines: {node: '>=16.0.0'}
 
+  '@metamask/keyring-api@18.0.0':
+    resolution: {integrity: sha512-3KxZmyNZnof715inJ72QSB43pNBLcAguLU31FOjc5tfNVJzzeqKKSWUftuD4AkJhX7XrT/9KRNF+PXZK+wvYng==}
+    engines: {node: ^18.18 || >=20}
+
   '@metamask/keyring-api@8.1.3':
     resolution: {integrity: sha512-Ztm4G/U5hc+GKS/VOnqLWYVh2O26lFQ03bNpeufrfKq7regydIqYuHFcSowbQyj7xCZqKPsvl9jxhKdYIxvCXQ==}
     engines: {node: ^18.18 || >=20}
     peerDependencies:
       '@metamask/providers': ^17.2.0
+
+  '@metamask/keyring-snap-client@5.0.0':
+    resolution: {integrity: sha512-XQYBDLBqxWiHCnuEaa9Kk6KqlZj5IWCDbTqp3XXkdU2TxUH9C6Z7257oRFFYq+VTz9s/Qn8AhiRznU6g/gOiVw==}
+    engines: {node: ^18.18 || >=20}
+    peerDependencies:
+      '@metamask/providers': ^19.0.0
+
+  '@metamask/keyring-utils@3.0.0':
+    resolution: {integrity: sha512-bo6Bgmz2uJ+DI5r9qyZjp435VCrc0A4nES/awTPnRWETqpbOBfMDVlLeQxQE88exCrE8efK2hTJ1by5fw8+N2g==}
+    engines: {node: ^18.18 || >=20}
 
   '@metamask/object-multiplex@2.1.0':
     resolution: {integrity: sha512-4vKIiv0DQxljcXwfpnbsXcfa5glMj5Zg9mqn4xpIWqkv6uJ2ma5/GtUfLFSxhlxnR8asRMv8dDmWya1Tc1sDFA==}
@@ -889,6 +917,10 @@ packages:
 
   '@metamask/utils@10.0.0':
     resolution: {integrity: sha512-EoNZJijLqBbir8ikuiHBHfhCqE1s8Odae3bhtRAd8itJB109xmfFF84djY/iaQI+EAp59Sy7iwengfRohaTK8A==}
+    engines: {node: ^18.18 || ^20.14 || >=22}
+
+  '@metamask/utils@11.4.2':
+    resolution: {integrity: sha512-TygCcGmUbhmpxjYMm+mx68kRiJ80jYV54/Aa8gUFBv4cTX7ulX2XZKr8CJoJAw3K3FN5ZvCRmU0IzWZFaonwhA==}
     engines: {node: ^18.18 || ^20.14 || >=22}
 
   '@metamask/utils@9.3.0':
@@ -2008,6 +2040,10 @@ packages:
   base-x@3.0.10:
     resolution: {integrity: sha512-7d0s06rR9rYaIWHkpfLIFICM/tkSVdoPC9qYAQRpxn9DdKNWNsKC0uk++akckyLq16Tx2WIinnZ6WRriAt6njQ==}
 
+  base58-js@1.0.5:
+    resolution: {integrity: sha512-LkkAPP8Zu+c0SVNRTRVDyMfKVORThX+rCViget00xdgLRrKkClCTz1T7cIrpr69ShwV5XJuuoZvMvJ43yURwkA==}
+    engines: {node: '>= 8'}
+
   base64-sol@1.0.1:
     resolution: {integrity: sha512-ld3cCNMeXt4uJXmLZBHFGMvVpK9KsLVEhPpFRXnvSVAqABKbuNZg/+dsq3NuM+wxFLb/UrVkz7m1ciWmkMfTbg==}
 
@@ -2020,6 +2056,9 @@ packages:
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
+
+  bitcoin-address-validation@2.2.3:
+    resolution: {integrity: sha512-1uGCGl26Ye8JG5qcExtFLQfuib6qEZWNDo1ZlLlwp/z7ygUFby3IxolgEfgMGaC+LG9csbVASLcH8fRLv7DIOg==}
 
   blakejs@1.2.1:
     resolution: {integrity: sha512-QXUSXI3QVc/gJME0dBpXrag1kbzOqCjCX8/b54ntNyW6sjtoqxqRk3LTmXzaJoh71zMsDCjM+47jS7XiwN/+fQ==}
@@ -3377,6 +3416,7 @@ packages:
 
   lodash.isequal@4.5.0:
     resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+    deprecated: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
 
   lodash.memoize@4.1.2:
     resolution: {integrity: sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==}
@@ -4063,6 +4103,9 @@ packages:
 
   sha1@1.1.1:
     resolution: {integrity: sha512-dZBS6OrMjtgVkopB1Gmo4RQCDKiZsqcpAQpkV/aaj+FCrCg8r4I4qMkDPQjBgLIxlmu9k4nUbWq6ohXahOneYA==}
+
+  sha256-uint8array@0.10.7:
+    resolution: {integrity: sha512-1Q6JQU4tX9NqsDGodej6pkrUVQVNapLZnvkwIhddH/JqzBZF1fSaxSWNY6sziXBE8aEa2twtGkXUrwzGeZCMpQ==}
 
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
@@ -5097,6 +5140,10 @@ snapshots:
       '@ethereumjs/util': 8.1.0
       crc-32: 1.2.2
 
+  '@ethereumjs/common@4.4.0':
+    dependencies:
+      '@ethereumjs/util': 9.1.0
+
   '@ethereumjs/rlp@4.0.1': {}
 
   '@ethereumjs/rlp@5.0.2': {}
@@ -5108,11 +5155,23 @@ snapshots:
       '@ethereumjs/util': 8.1.0
       ethereum-cryptography: 2.2.1
 
+  '@ethereumjs/tx@5.4.0':
+    dependencies:
+      '@ethereumjs/common': 4.4.0
+      '@ethereumjs/rlp': 5.0.2
+      '@ethereumjs/util': 9.1.0
+      ethereum-cryptography: 2.2.1
+
   '@ethereumjs/util@8.1.0':
     dependencies:
       '@ethereumjs/rlp': 4.0.1
       ethereum-cryptography: 2.2.1
       micro-ftch: 0.3.1
+
+  '@ethereumjs/util@9.1.0':
+    dependencies:
+      '@ethereumjs/rlp': 5.0.2
+      ethereum-cryptography: 2.2.1
 
   '@ethersproject/abi@5.7.0':
     dependencies:
@@ -5637,9 +5696,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@metamask/keyring-api@8.1.3(@metamask/providers@17.2.1(webextension-polyfill@0.12.0))(webextension-polyfill@0.12.0)':
+  '@metamask/keyring-api@18.0.0':
     dependencies:
-      '@metamask/providers': 17.2.1(webextension-polyfill@0.12.0)
+      '@metamask/keyring-utils': 3.0.0
+      '@metamask/superstruct': 3.1.0
+      '@metamask/utils': 11.4.2
+      bitcoin-address-validation: 2.2.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@metamask/keyring-api@8.1.3(webextension-polyfill@0.12.0)':
+    dependencies:
       '@metamask/snaps-sdk': 6.9.0(webextension-polyfill@0.12.0)
       '@metamask/superstruct': 3.1.0
       '@metamask/utils': 9.3.0
@@ -5649,6 +5716,26 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
       - webextension-polyfill
+
+  '@metamask/keyring-snap-client@5.0.0':
+    dependencies:
+      '@metamask/keyring-api': 18.0.0
+      '@metamask/keyring-utils': 3.0.0
+      '@metamask/superstruct': 3.1.0
+      '@types/uuid': 9.0.8
+      uuid: 9.0.1
+      webextension-polyfill: 0.12.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@metamask/keyring-utils@3.0.0':
+    dependencies:
+      '@ethereumjs/tx': 5.4.0
+      '@metamask/superstruct': 3.1.0
+      '@metamask/utils': 11.4.2
+      bitcoin-address-validation: 2.2.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@metamask/object-multiplex@2.1.0':
     dependencies:
@@ -5714,6 +5801,21 @@ snapshots:
       '@scure/base': 1.1.9
       '@types/debug': 4.1.12
       debug: 4.3.7(supports-color@8.1.1)
+      pony-cause: 2.1.11
+      semver: 7.6.3
+      uuid: 9.0.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@metamask/utils@11.4.2':
+    dependencies:
+      '@ethereumjs/tx': 4.2.0
+      '@metamask/superstruct': 3.1.0
+      '@noble/hashes': 1.5.0
+      '@scure/base': 1.1.9
+      '@types/debug': 4.1.12
+      debug: 4.3.7(supports-color@8.1.1)
+      lodash.memoize: 4.1.2
       pony-cause: 2.1.11
       semver: 7.6.3
       uuid: 9.0.1
@@ -6895,6 +6997,8 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
+  base58-js@1.0.5: {}
+
   base64-sol@1.0.1: {}
 
   bech32@1.1.4: {}
@@ -6902,6 +7006,12 @@ snapshots:
   bech32@2.0.0: {}
 
   binary-extensions@2.3.0: {}
+
+  bitcoin-address-validation@2.2.3:
+    dependencies:
+      base58-js: 1.0.5
+      bech32: 2.0.0
+      sha256-uint8array: 0.10.7
 
   blakejs@1.2.1: {}
 
@@ -9329,6 +9439,8 @@ snapshots:
     dependencies:
       charenc: 0.0.2
       crypt: 0.0.2
+
+  sha256-uint8array@0.10.7: {}
 
   shebang-command@2.0.0:
     dependencies:

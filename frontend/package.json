@@ -10,8 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@bobanetwork/aa-hc-sdk-client": "^1.0.0",
     "@metamask/keyring-api": "^8.0.0",
+    "@metamask/keyring-snap-client": "^5.0.0",
+    "@bobanetwork/aa-hc-sdk-client": "^1.0.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-scroll-area": "^1.1.0",
     "@radix-ui/react-separator": "^1.1.0",
