@@ -4,11 +4,14 @@ FROM node:20-alpine AS build
 # Set working directory
 WORKDIR /app
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
-RUN npm i
+RUN pnpm install
 
 # Copy the rest of the application code
 COPY . .
@@ -17,7 +20,7 @@ COPY . .
 COPY .env-boba-sepolia .env
 
 # Build the application
-RUN npm run build
+RUN pnpm build
 
 # Stage 2: Serve the application
 FROM nginx:alpine
