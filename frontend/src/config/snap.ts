@@ -18,6 +18,13 @@ export const ADD_SUB_CONTRACT = '0x63BceAfAF62fB12394ecbEf10dBF1c5c36ba8b38';
 
 export const PRESI_SIM_TOKEN_CONTRACT = import.meta.env.VITE_SMART_CONTRACT;
 
+console.log('config: ', {
+    sc: import.meta.env.VITE_SMART_CONTRACT,
+    so: import.meta.env.VITE_SNAP_ORIGIN,
+    sv: import.meta.env.VITE_SNAP_VERSION,
+    rpc: import.meta.env.VITE_RPC_PROVIDER
+})
+
 /*
     - admin user, create HA Account with OP default private key + Salt
 */
