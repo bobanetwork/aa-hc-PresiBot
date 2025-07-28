@@ -1,5 +1,5 @@
 
-import { defaultSnapOrigin, snapPackageVersion } from '../config';
+import { defaultSnapOrigin } from '../config';
 import type { GetSnapsResponse, Snap } from '../types/snap';
 
 /**
@@ -53,9 +53,7 @@ export const switchToBobaLocal = async () => {
  */
 export const connectSnap = async (
   snapId: string = defaultSnapOrigin,
-  params: Record<'version' | string, unknown> = {
-    version: snapPackageVersion,
-  },
+  params: Record<string, unknown> = {}
 ) => {
   // check for current connected chain and force user to switch to boba sepolia.
   const currentChain = window.ethereum.networkVersion;
