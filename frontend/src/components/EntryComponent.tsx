@@ -80,7 +80,8 @@ const EntryComponent = ({
             <div className="w-6/12 m-auto border-radius-10  overflow-hidden relative">
                 <img className="m-auto w-80 mt-28" src={poweredBy} alt=""/>
                 <span className="block mt-3 font-bold text-xs text-gray-600 sm:text-center dark:text-gray-400">
-                    Snap Version: Latest Installed Snap: {state?.installedSnap?.version}
+                    Snap Version: Latest <br/>
+                    Installed Snap: {state?.installedSnap?.version}
                 </span>
             </div>
         </div>
